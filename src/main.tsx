@@ -6,6 +6,7 @@ import { ConvexReactClient } from "convex/react";
 import { StrictMode, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./index.css";
 import "./types/global.d.ts";
 
@@ -13,6 +14,12 @@ import "./types/global.d.ts";
 const Landing = lazy(() => import("./pages/Landing.tsx"));
 const AuthPage = lazy(() => import("./pages/Auth.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
+const Visualize = lazy(() => import("./pages/Visualize.tsx"));
+const Benchmark = lazy(() => import("./pages/Benchmark.tsx"));
+const Recommend = lazy(() => import("./pages/Recommend.tsx"));
+const Learn = lazy(() => import("./pages/Learn.tsx"));
+const AlgorithmDetail = lazy(() => import("./pages/AlgorithmDetail.tsx"));
 
 // Simple loading fallback for route transitions
 function RouteLoading() {
@@ -56,17 +63,25 @@ createRoot(document.getElementById("root")!).render(
     <VlyToolbar />
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <BrowserRouter>
-          <RouteSyncer />
-          <Suspense fallback={<RouteLoading />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<AuthPage redirectAfterAuth="/" />} /> {/* TODO: change redirect after auth to correct page */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-        <Toaster />
+        <ThemeProvider>
+          <BrowserRouter>
+            <RouteSyncer />
+            <Suspense fallback={<RouteLoading />}>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/algorithm/:slug" element={<AlgorithmDetail />} />
+                <Route path="/visualize" element={<Visualize />} />
+                <Route path="/benchmark" element={<Benchmark />} />
+                <Route path="/recommend" element={<Recommend />} />
+                <Route path="/learn" element={<Learn />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+          <Toaster />
+        </ThemeProvider>
       </ConvexAuthProvider>
     </InstrumentationProvider>
   </StrictMode>,
