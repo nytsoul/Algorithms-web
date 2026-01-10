@@ -24,8 +24,8 @@ const AlgorithmDetail = lazy(() => import("./pages/AlgorithmDetail.tsx"));
 // Simple loading fallback for route transitions
 function RouteLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-pulse text-muted-foreground">Loading...</div>
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[var(--neon-cyan)] border-t-transparent" />
     </div>
   );
 }
@@ -63,8 +63,8 @@ createRoot(document.getElementById("root")!).render(
     <VlyToolbar />
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <ThemeProvider>
-          <BrowserRouter>
+        <BrowserRouter>
+          <ThemeProvider>
             <RouteSyncer />
             <Suspense fallback={<RouteLoading />}>
               <Routes>
@@ -79,9 +79,9 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
-          </BrowserRouter>
-          <Toaster />
-        </ThemeProvider>
+            <Toaster />
+          </ThemeProvider>
+        </BrowserRouter>
       </ConvexAuthProvider>
     </InstrumentationProvider>
   </StrictMode>,
