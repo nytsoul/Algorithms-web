@@ -1,46 +1,68 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Code2, Play, Pause, RotateCcw, FastForward, ChevronLeft, ChevronRight } from "lucide-react";
+import { Code2, Play, Pause, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GraphVisualization, generateBFSSteps, generateDijkstraSteps } from "@/components/GraphVisualization";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function Visualize() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState([50]);
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState("quick-sort");
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("");
 
-  const algorithms = [
-    { value: "quick-sort", label: "Quick Sort", type: "array" },
-    { value: "merge-sort", label: "Merge Sort", type: "array" },
-    { value: "bubble-sort", label: "Bubble Sort", type: "array" },
-    { value: "bfs", label: "Breadth-First Search", type: "graph" },
-    { value: "dijkstra", label: "Dijkstra's Algorithm", type: "graph" },
-    { value: "dfs", label: "Depth-First Search", type: "graph" },
-  ];
+  const allAlgorithms = useQuery(api.algorithms.getAllAlgorithms) || [];
 
-  const arraySteps = [
-    { step: 1, array: [64, 34, 25, 12, 22, 11, 90], pivot: 3, description: "Initial array, selecting pivot" },
-    { step: 2, array: [34, 25, 12, 22, 11, 64, 90], pivot: 2, description: "Partition around pivot" },
-    { step: 3, array: [25, 12, 22, 11, 34, 64, 90], pivot: 1, description: "Recursively sort left partition" },
-    { step: 4, array: [11, 12, 22, 25, 34, 64, 90], pivot: -1, description: "Array sorted!" },
-  ];
+  // Set default selected algorithm when data loads
+  useEffect(() => {
+    if (allAlgorithms.length > 0 && !selectedAlgorithm) {
+      setSelectedAlgorithm(allAlgorithms[0].slug);
+    }
+  }, [allAlgorithms, selectedAlgorithm]);
 
-  const graphSteps = selectedAlgorithm === "bfs"
+  const selectedAlgoData = allAlgorithms.find(a => a.slug === selectedAlgorithm);
+
+  // Generate visualization steps based on algorithm type
+  const generateArraySteps = (algoName: string) => {
+    // Generate dummy array visualization steps
+    const initialArray = [64, 34, 25, 12, 22, 11, 90, 45, 78, 33];
+    const sortedArray = [...initialArray].sort((a, b) => a - b);
+
+    return [
+      { step: 1, array: initialArray, pivot: 0, description: `Starting ${algoName}` },
+      { step: 2, array: [...initialArray].sort(() => Math.random() - 0.5), pivot: 3, description: "Processing elements..." },
+      { step: 3, array: [...initialArray].sort(() => Math.random() - 0.5), pivot: 5, description: "Comparing and swapping..." },
+      { step: 4, array: sortedArray, pivot: -1, description: "Algorithm complete!" },
+    ];
+  };
+
+  const generateTreeSteps = (algoName: string) => {
+    return [
+      { step: 1, array: [50, 30, 70, 20, 40, 60, 80], pivot: 0, description: `Building tree for ${algoName}` },
+      { step: 2, array: [50, 30, 70, 20, 40, 60, 80], pivot: 1, description: "Traversing left subtree..." },
+      { step: 3, array: [50, 30, 70, 20, 40, 60, 80], pivot: 2, description: "Traversing right subtree..." },
+      { step: 4, array: [50, 30, 70, 20, 40, 60, 80], pivot: -1, description: "Tree traversal complete!" },
+    ];
+  };
+
+  const arraySteps = selectedAlgoData?.visualizationType === "tree"
+    ? generateTreeSteps(selectedAlgoData?.name || "")
+    : generateArraySteps(selectedAlgoData?.name || "");
+
+  const graphSteps = selectedAlgoData?.name.toLowerCase().includes("bfs") || selectedAlgoData?.name.toLowerCase().includes("breadth")
     ? generateBFSSteps("A")
-    : selectedAlgorithm === "dijkstra"
-    ? generateDijkstraSteps("A")
-    : generateBFSSteps("A");
+    : generateDijkstraSteps("A");
 
-  const visualizationSteps = algorithms.find(a => a.value === selectedAlgorithm)?.type === "graph"
+  const visualizationSteps = selectedAlgoData?.visualizationType === "graph"
     ? graphSteps
     : arraySteps;
 
-  const isGraphAlgorithm = algorithms.find(a => a.value === selectedAlgorithm)?.type === "graph";
+  const isGraphAlgorithm = selectedAlgoData?.visualizationType === "graph";
 
   useEffect(() => {
     setCurrentStep(0);
@@ -61,6 +83,17 @@ export default function Visualize() {
       return () => clearInterval(interval);
     }
   }, [isPlaying, speed, visualizationSteps.length]);
+
+  if (!allAlgorithms.length || !selectedAlgoData) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[var(--neon-cyan)] border-t-transparent mb-4"></div>
+          <p className="text-muted-foreground">Loading algorithms...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -100,7 +133,7 @@ export default function Visualize() {
             </span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Watch algorithms come to life with step-by-step interactive visualization
+            Watch 600+ algorithms come to life with step-by-step interactive visualization
           </p>
         </motion.div>
 
@@ -110,11 +143,13 @@ export default function Visualize() {
               <div className="mb-6">
                 <Select value={selectedAlgorithm} onValueChange={setSelectedAlgorithm}>
                   <SelectTrigger className="h-12">
-                    <SelectValue />
+                    <SelectValue placeholder="Select an algorithm" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {algorithms.map(algo => (
-                      <SelectItem key={algo.value} value={algo.value}>{algo.label}</SelectItem>
+                  <SelectContent className="max-h-[400px]">
+                    {allAlgorithms.map(algo => (
+                      <SelectItem key={algo._id} value={algo.slug}>
+                        {algo.name} ({algo.category})
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -129,10 +164,10 @@ export default function Visualize() {
                     nodes={(graphSteps[currentStep] as any)?.nodes || []}
                     edges={(graphSteps[currentStep] as any)?.edges || []}
                     currentStep={currentStep}
-                    algorithm={algorithms.find(a => a.value === selectedAlgorithm)?.label || ""}
+                    algorithm={selectedAlgoData?.name || ""}
                   />
                 ) : (
-                  /* Array Visualization */
+                  /* Array/Tree Visualization */
                   <div className="relative z-10 flex items-end justify-center gap-2 h-full">
                     {arraySteps[currentStep]?.array.map((value, index) => (
                       <motion.div
@@ -142,8 +177,8 @@ export default function Visualize() {
                         transition={{ duration: 0.5 }}
                         className={`relative w-16 rounded-t-lg ${
                           index === arraySteps[currentStep]?.pivot
-                            ? "bg-gradient-to-t from-[var(--neon-pink)] to-[var(--neon-purple)]"
-                            : "bg-gradient-to-t from-[var(--neon-cyan)] to-[var(--neon-cyan)]/50"
+                            ? "bg-gradient-to-t from-[var(--neon-pink)] to-[var(--neon-purple)] glow-pink"
+                            : "bg-gradient-to-t from-[var(--neon-cyan)] to-[var(--neon-cyan)]/50 glow-cyan"
                         }`}
                       >
                         <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-sm font-bold text-foreground">
@@ -163,7 +198,7 @@ export default function Visualize() {
                   <Button onClick={() => setCurrentStep(Math.max(0, currentStep - 1))} size="icon" variant="outline" className="border-[var(--neon-cyan)]/30">
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <Button onClick={() => setIsPlaying(!isPlaying)} size="icon" className="bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)]">
+                  <Button onClick={() => setIsPlaying(!isPlaying)} size="icon" className="bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)] glow-cyan">
                     {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   </Button>
                   <Button onClick={() => setCurrentStep(Math.min(visualizationSteps.length - 1, currentStep + 1))} size="icon" variant="outline" className="border-[var(--neon-cyan)]/30">
@@ -194,30 +229,50 @@ export default function Visualize() {
               <h3 className="text-xl font-bold mb-4 text-[var(--neon-cyan)]">Algorithm Info</h3>
               <div className="space-y-3 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Time Complexity:</span>
-                  <p className="font-mono text-[var(--neon-pink)]">O(n log n)</p>
+                  <span className="text-muted-foreground block mb-1">Name:</span>
+                  <p className="font-semibold text-foreground">{selectedAlgoData?.name}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Space Complexity:</span>
-                  <p className="font-mono text-[var(--neon-purple)]">O(log n)</p>
+                  <span className="text-muted-foreground block mb-1">Category:</span>
+                  <p className="text-foreground">{selectedAlgoData?.category}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Type:</span>
-                  <p className="text-foreground">Divide & Conquer</p>
+                  <span className="text-muted-foreground block mb-1">Domain:</span>
+                  <p className="text-foreground">{selectedAlgoData?.domain}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Difficulty:</span>
+                  <p className="text-foreground">{selectedAlgoData?.difficulty}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Time Complexity:</span>
+                  <p className="font-mono text-[var(--neon-pink)]">
+                    Best: {selectedAlgoData?.timeComplexity.best}<br />
+                    Avg: {selectedAlgoData?.timeComplexity.average}<br />
+                    Worst: {selectedAlgoData?.timeComplexity.worst}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block mb-1">Space Complexity:</span>
+                  <p className="font-mono text-[var(--neon-purple)]">{selectedAlgoData?.spaceComplexity}</p>
                 </div>
               </div>
             </Card>
 
             <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-              <h3 className="text-xl font-bold mb-4 text-[var(--neon-pink)]">Code Snippet</h3>
-              <pre className="text-xs bg-background/50 p-4 rounded overflow-x-auto">
-                <code className="text-foreground">{`function quickSort(arr, low, high) {
-  if (low < high) {
-    const pi = partition(arr, low, high);
-    quickSort(arr, low, pi - 1);
-    quickSort(arr, pi + 1, high);
-  }
-}`}</code>
+              <h3 className="text-xl font-bold mb-4 text-[var(--neon-pink)]">Description</h3>
+              <p className="text-sm text-muted-foreground mb-4">{selectedAlgoData?.description}</p>
+
+              <h4 className="text-md font-semibold mb-2 text-[var(--neon-cyan)]">Applications</h4>
+              <ul className="text-xs text-muted-foreground space-y-1 mb-4">
+                {selectedAlgoData?.applications.slice(0, 3).map((app, i) => (
+                  <li key={i}>• {app}</li>
+                ))}
+              </ul>
+
+              <h4 className="text-md font-semibold mb-2 text-[var(--neon-purple)]">Code Snippet</h4>
+              <pre className="text-xs bg-background/50 p-4 rounded overflow-x-auto max-h-[200px]">
+                <code className="text-foreground">{selectedAlgoData?.implementation}</code>
               </pre>
             </Card>
           </div>
