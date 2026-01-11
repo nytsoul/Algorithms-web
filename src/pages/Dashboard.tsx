@@ -125,7 +125,7 @@ export default function Dashboard() {
             </span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Discover and explore 1000+ algorithms across multiple domains
+            Discover and explore 600+ algorithms across multiple domains
           </p>
         </motion.div>
 

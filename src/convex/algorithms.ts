@@ -843,7 +843,7 @@ function computeLPS(pattern) {
 export const getAllAlgorithms = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("algorithms").take(300);
+    return await ctx.db.query("algorithms").collect();
   },
 });
 
@@ -853,7 +853,7 @@ export const getAlgorithmsByDomain = query({
     return await ctx.db
       .query("algorithms")
       .withIndex("by_domain", (q) => q.eq("domain", args.domain))
-      .take(300);
+      .collect();
   },
 });
 
@@ -873,14 +873,14 @@ export const getAlgorithmsByCategory = query({
     return await ctx.db
       .query("algorithms")
       .withIndex("by_category", (q) => q.eq("category", args.category))
-      .take(300);
+      .collect();
   },
 });
 
 export const searchAlgorithms = query({
   args: { searchTerm: v.string() },
   handler: async (ctx, args) => {
-    const allAlgorithms = await ctx.db.query("algorithms").take(300);
+    const allAlgorithms = await ctx.db.query("algorithms").collect();
     const searchLower = args.searchTerm.toLowerCase();
 
     return allAlgorithms.filter(algo =>

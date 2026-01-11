@@ -29,7 +29,7 @@ export default function Landing() {
   const features = [
     {
       icon: Code2,
-      title: "1000+ Algorithms",
+      title: "600+ Algorithms",
       description: "Cross-domain repository covering DSA, AI, ML, Networks, Security, Graphics",
       color: "text-[var(--neon-cyan)]",
     },
@@ -160,7 +160,7 @@ export default function Landing() {
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
               Explore, visualize, and benchmark{" "}
-              <span className="text-[var(--neon-pink)] font-semibold">1000+ algorithms</span>{" "}
+              <span className="text-[var(--neon-pink)] font-semibold">600+ algorithms</span>{" "}
               across multiple domains with{" "}
               <span className="text-[var(--neon-cyan)] font-semibold">AI-powered recommendations</span>
             </p>
