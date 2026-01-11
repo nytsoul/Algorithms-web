@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { Code2, Play, Pause, RotateCcw, FastForward, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GraphVisualization, generateBFSSteps, generateDijkstraSteps } from "@/components/GraphVisualization";
 
 export default function Visualize() {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -14,19 +15,52 @@ export default function Visualize() {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("quick-sort");
 
   const algorithms = [
-    { value: "quick-sort", label: "Quick Sort" },
-    { value: "merge-sort", label: "Merge Sort" },
-    { value: "bubble-sort", label: "Bubble Sort" },
-    { value: "dijkstra", label: "Dijkstra's Algorithm" },
-    { value: "bfs", label: "Breadth-First Search" },
+    { value: "quick-sort", label: "Quick Sort", type: "array" },
+    { value: "merge-sort", label: "Merge Sort", type: "array" },
+    { value: "bubble-sort", label: "Bubble Sort", type: "array" },
+    { value: "bfs", label: "Breadth-First Search", type: "graph" },
+    { value: "dijkstra", label: "Dijkstra's Algorithm", type: "graph" },
+    { value: "dfs", label: "Depth-First Search", type: "graph" },
   ];
 
-  const visualizationSteps = [
+  const arraySteps = [
     { step: 1, array: [64, 34, 25, 12, 22, 11, 90], pivot: 3, description: "Initial array, selecting pivot" },
     { step: 2, array: [34, 25, 12, 22, 11, 64, 90], pivot: 2, description: "Partition around pivot" },
     { step: 3, array: [25, 12, 22, 11, 34, 64, 90], pivot: 1, description: "Recursively sort left partition" },
     { step: 4, array: [11, 12, 22, 25, 34, 64, 90], pivot: -1, description: "Array sorted!" },
   ];
+
+  const graphSteps = selectedAlgorithm === "bfs"
+    ? generateBFSSteps("A")
+    : selectedAlgorithm === "dijkstra"
+    ? generateDijkstraSteps("A")
+    : generateBFSSteps("A");
+
+  const visualizationSteps = algorithms.find(a => a.value === selectedAlgorithm)?.type === "graph"
+    ? graphSteps
+    : arraySteps;
+
+  const isGraphAlgorithm = algorithms.find(a => a.value === selectedAlgorithm)?.type === "graph";
+
+  useEffect(() => {
+    setCurrentStep(0);
+  }, [selectedAlgorithm]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      const interval = setInterval(() => {
+        setCurrentStep(prev => {
+          if (prev >= visualizationSteps.length - 1) {
+            setIsPlaying(false);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 2000 - (speed[0] * 15));
+
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying, speed, visualizationSteps.length]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -88,25 +122,37 @@ export default function Visualize() {
 
               <div className="bg-background/50 rounded-lg p-8 mb-6 min-h-[400px] relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[var(--neon-cyan)]/5 to-[var(--neon-pink)]/5" />
-                <div className="relative z-10 flex items-end justify-center gap-2 h-full">
-                  {visualizationSteps[currentStep]?.array.map((value, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ height: 0 }}
-                      animate={{ height: `${(value / 100) * 300}px` }}
-                      transition={{ duration: 0.5 }}
-                      className={`relative w-16 rounded-t-lg ${
-                        index === visualizationSteps[currentStep]?.pivot
-                          ? "bg-gradient-to-t from-[var(--neon-pink)] to-[var(--neon-purple)]"
-                          : "bg-gradient-to-t from-[var(--neon-cyan)] to-[var(--neon-cyan)]/50"
-                      }`}
-                    >
-                      <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-sm font-bold text-foreground">
-                        {value}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
+
+                {isGraphAlgorithm ? (
+                  /* Graph Visualization */
+                  <GraphVisualization
+                    nodes={(graphSteps[currentStep] as any)?.nodes || []}
+                    edges={(graphSteps[currentStep] as any)?.edges || []}
+                    currentStep={currentStep}
+                    algorithm={algorithms.find(a => a.value === selectedAlgorithm)?.label || ""}
+                  />
+                ) : (
+                  /* Array Visualization */
+                  <div className="relative z-10 flex items-end justify-center gap-2 h-full">
+                    {arraySteps[currentStep]?.array.map((value, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ height: 0 }}
+                        animate={{ height: `${(value / 100) * 300}px` }}
+                        transition={{ duration: 0.5 }}
+                        className={`relative w-16 rounded-t-lg ${
+                          index === arraySteps[currentStep]?.pivot
+                            ? "bg-gradient-to-t from-[var(--neon-pink)] to-[var(--neon-purple)]"
+                            : "bg-gradient-to-t from-[var(--neon-cyan)] to-[var(--neon-cyan)]/50"
+                        }`}
+                      >
+                        <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-sm font-bold text-foreground">
+                          {value}
+                        </span>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-4">
@@ -133,7 +179,11 @@ export default function Visualize() {
                   <p className="text-sm font-semibold text-[var(--neon-cyan)] mb-2">
                     Step {currentStep + 1} of {visualizationSteps.length}
                   </p>
-                  <p className="text-foreground">{visualizationSteps[currentStep]?.description}</p>
+                  <p className="text-foreground">
+                    {isGraphAlgorithm
+                      ? visualizationSteps[currentStep]?.description
+                      : arraySteps[currentStep]?.description}
+                  </p>
                 </div>
               </div>
             </Card>
