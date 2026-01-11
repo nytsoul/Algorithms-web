@@ -8,10 +8,12 @@
  * @module
  */
 
+import type * as addRemaining200 from "../addRemaining200.js";
 import type * as algorithms from "../algorithms.js";
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as http from "../http.js";
+import type * as seed200Algorithms from "../seed200Algorithms.js";
 import type * as seedAllAlgorithms from "../seedAllAlgorithms.js";
 import type * as users from "../users.js";
 
@@ -22,10 +24,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  addRemaining200: typeof addRemaining200;
   algorithms: typeof algorithms;
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
   http: typeof http;
+  seed200Algorithms: typeof seed200Algorithms;
   seedAllAlgorithms: typeof seedAllAlgorithms;
   users: typeof users;
 }>;
