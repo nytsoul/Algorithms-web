@@ -16,7 +16,6 @@ import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as http from "../http.js";
 import type * as seed200Algorithms from "../seed200Algorithms.js";
 import type * as seedAllAlgorithms from "../seedAllAlgorithms.js";
-import type * as updateAlgorithmCode from "../updateAlgorithmCode.js";
 import type * as users from "../users.js";
 
 import type {
@@ -34,7 +33,6 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   seed200Algorithms: typeof seed200Algorithms;
   seedAllAlgorithms: typeof seedAllAlgorithms;
-  updateAlgorithmCode: typeof updateAlgorithmCode;
   users: typeof users;
 }>;
 
