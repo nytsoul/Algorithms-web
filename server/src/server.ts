@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -11,21 +10,10 @@ import algorithmRoutes from './routes/algorithms';
 // Prioritize root .env for shared Supabase credentials
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config(); // Load local .env if present
-=======
-import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' }); // Try root first
-dotenv.config(); // Fallback to local
-
-import express, { Express, Request, Response } from 'express';
-import cors from 'cors';
-import algorithmRoutes from './routes/algorithms';
-import userRoutes from './routes/users';
->>>>>>> 6940946 (initial commit)
 
 const app: Express = express();
 const PORT = process.env.PORT || 5000;
 
-<<<<<<< HEAD
 // Supabase Connection Check
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
@@ -139,8 +127,6 @@ async function checkDatabaseConnection(retries = 3) {
   console.log('   - API endpoints are functional');
 }
 
-=======
->>>>>>> 6940946 (initial commit)
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -148,7 +134,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/algorithms', algorithmRoutes);
-<<<<<<< HEAD
 
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({
@@ -180,14 +165,4 @@ app.listen(PORT, async () => {
   console.log(`   - POST /api/algorithms   - Create new algorithm\n`);
 
   await checkDatabaseConnection();
-=======
-app.use('/api/users', userRoutes);
-
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', message: 'Server is running' });
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
->>>>>>> 6940946 (initial commit)
 });
