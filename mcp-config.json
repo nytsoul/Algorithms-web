@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+        "algoverse-supabase": {
+            "command": "node",
+            "args": [
+                "d:/Programming/Project/Algorithms/mcp-server/index.js"
+            ],
+            "env": {
+                "SUPABASE_URL": "https://frcqntcmrpjiydoihbcm.supabase.co",
+                "SUPABASE_SERVICE_ROLE_KEY": "sb_secret_8yRH1xFFKBUk5iRuV4CAmA_kodZdFT5"
+            }
+        }
+    }
+}

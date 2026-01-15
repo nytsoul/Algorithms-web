@@ -31,7 +31,7 @@ function generateAlgorithm(
         algorithmNumber: id,
         difficulty,
         paradigm,
-        tags: [category.toLowerCase(), domain.toLowerCase()],
+        tags: [...new Set([category.toLowerCase(), domain.toLowerCase()])],
         timeComplexity: {
             best: "O(1)",
             average: "O(n)",

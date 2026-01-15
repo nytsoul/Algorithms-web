@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase, isSupabaseReady } from '@/lib/supabase';
 import { Algorithm, MOCK_ALGORITHMS } from '@/lib/algorithms-data';
@@ -61,3 +60,4 @@ export function useAlgorithmsByDifficulty(difficulty: string) {
     const filteredAlgorithms = algorithms.filter(a => a.difficulty === difficulty);
     return { algorithms: filteredAlgorithms, isLoading };
 }
+

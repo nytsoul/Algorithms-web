@@ -158,7 +158,7 @@ class ErrorBoundary extends React.Component<
             error: "An error occurred",
             stack: "",
           }}
-          setError={() => {}}
+          setError={() => { }}
         />
       );
     }
@@ -179,6 +179,10 @@ export function InstrumentationProvider({
       try {
         console.log(event);
         event.preventDefault();
+        if (event.message.includes("Failed to fetch") || event.message.includes("ERR_NAME_NOT_RESOLVED")) {
+          return;
+        }
+
         setError({
           error: event.message,
           stack: event.error?.stack || "",
@@ -212,9 +216,14 @@ export function InstrumentationProvider({
           });
         }
 
+        const reasonMessage = event.reason?.message || String(event.reason);
+        if (reasonMessage.includes("Failed to fetch") || reasonMessage.includes("ERR_NAME_NOT_RESOLVED")) {
+          return;
+        }
+
         setError({
-          error: event.reason.message,
-          stack: event.reason.stack,
+          error: reasonMessage,
+          stack: event.reason?.stack || "",
         });
       } catch (error) {
         console.error("Error in handleRejection:", error);
