@@ -10,7 +10,8 @@ export function useAlgorithms() {
     useEffect(() => {
         async function fetchAlgorithms() {
             if (!isSupabaseReady) {
-                // Use comprehensive 1000 algorithms when Supabase is not configured
+                // Use all 1000 algorithms when Supabase is not configured
+                console.log('📊 Loading ALL_1000_ALGORITHMS:', ALL_1000_ALGORITHMS.length);
                 setAlgorithms(ALL_1000_ALGORITHMS);
                 setIsLoading(false);
                 return;
@@ -24,13 +25,16 @@ export function useAlgorithms() {
                 if (error) throw error;
 
                 if (data && data.length > 0) {
+                    console.log('📊 Loaded from Supabase:', data.length);
                     setAlgorithms(data);
                 } else {
-                    // Fallback to comprehensive dataset
+                    // Fallback to ALL_1000_ALGORITHMS dataset
+                    console.log('📊 Fallback to ALL_1000_ALGORITHMS:', ALL_1000_ALGORITHMS.length);
                     setAlgorithms(ALL_1000_ALGORITHMS);
                 }
             } catch (error) {
                 console.error('Error fetching algorithms:', error);
+                console.log('📊 Error fallback to ALL_1000_ALGORITHMS:', ALL_1000_ALGORITHMS.length);
                 setAlgorithms(ALL_1000_ALGORITHMS);
             } finally {
                 setIsLoading(false);

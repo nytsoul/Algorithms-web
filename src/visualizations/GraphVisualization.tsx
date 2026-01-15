@@ -110,7 +110,7 @@ export function GraphVisualization({ nodes, edges, currentStep = 0, algorithm = 
       {/* Render nodes */}
       {animatedNodes.map((node, index) => (
         <motion.g
-          key={node.id}
+          key={`${node.id}-${index}`}
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{

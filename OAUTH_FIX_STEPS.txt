@@ -1,0 +1,68 @@
+=== GOOGLE OAUTH FIX: Error 400 redirect_uri_mismatch ===
+
+PROBLEM:
+Google rejected the login because the redirect URL doesn't match their records.
+
+YOUR EXACT REDIRECT URIs TO ADD IN GOOGLE CLOUD CONSOLE:
+================================================
+
+1. For Development (Primary):
+   http://localhost:5173/dashboard
+
+2. For Supabase Callback:
+   https://tuhjfziufhfcjdvthaaj.supabase.co/auth/v1/callback
+
+STEPS TO FIX:
+============
+
+1. Open: https://console.cloud.google.com/apis/credentials
+
+2. Find and click your OAuth 2.0 Client ID (Web application)
+
+3. Scroll down to "Authorized redirect URIs"
+
+4. CLEAR ALL existing URIs
+
+5. ADD THESE TWO URIs (copy-paste exactly):
+   - http://localhost:5173/dashboard
+   - https://tuhjfziufhfcjdvthaaj.supabase.co/auth/v1/callback
+
+6. Click SAVE
+
+7. Copy your:
+   - Client ID
+   - Client Secret
+
+8. Go to Supabase: https://app.supabase.com/project/tuhjfziufhfcjdvthaaj/auth/providers
+
+9. Click the GOOGLE provider button
+
+10. Paste your Client ID and Client Secret
+
+11. Click SAVE
+
+12. Go back to: http://localhost:5173
+
+13. Try "Sign up with Google" again
+
+
+DEBUGGING IF STILL NOT WORKING:
+==============================
+
+Open Browser Console (Press F12) and look for:
+  "[Auth] Window origin: http://localhost:5173"
+  "[Auth] Redirect URL being sent to Google: http://localhost:5173/dashboard"
+
+Copy-paste that exact redirect URL into Google Cloud Console.
+
+If you see a different URL (like http://127.0.0.1:5173), use THAT URL instead.
+
+
+COMMON MISTAKES:
+================
+✗ Forgot to click SAVE in Google Console
+✗ Typed the URL wrong (case-sensitive!)
+✗ Used 127.0.0.1 instead of localhost
+✗ Forgot the /dashboard path
+✗ Used https:// when it should be http://
+✗ Didn't wait after saving before testing

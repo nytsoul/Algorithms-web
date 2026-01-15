@@ -1,24 +1,23 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/use-auth";
-import { isSupabaseConfigured, supabaseConfigReason } from "@/lib/supabase";
-import { ArrowRight, Loader2, Mail, Lock, UserX, Rocket, LogIn, UserPlus, AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowLeft, Mail, Lock, Calendar, Loader2, Rocket, UserPlus } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface AuthProps {
   redirectAfterAuth?: string;
 }
 
+type AuthMode = "choose" | "login" | "signup";
+
 function Auth() {
-  const { isLoading: authLoading, isAuthenticated, signIn, signUp, isMock } = useAuth();
+  const { isLoading: authLoading, isAuthenticated, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [authMode, setAuthMode] = useState<AuthMode>("choose");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,52 +29,103 @@ function Auth() {
     }
   }, [authLoading, isAuthenticated, navigate, from]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+
     try {
       const formData = new FormData(event.currentTarget);
-      if (mode === "login") {
-        await signIn("email-password", formData);
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+
+      if (!email || !password) {
+        setError("Email and password are required");
+        setIsLoading(false);
+        return;
+      }
+
+      await signIn("email-password", formData);
+    } catch (err: any) {
+      console.error("[Auth] Login error:", err);
+      
+      if (err?.message?.includes("Invalid") || err?.message?.includes("not found")) {
+        setError("❌ Invalid email or password. If you just signed up, please check your email for confirmation link.");
+      } else if (err?.message?.includes("Email not confirmed")) {
+        setError("❌ Please confirm your email first. Check your inbox for confirmation link.");
       } else {
-        await signUp(formData);
+        setError(err?.message || "Login failed. Please try again.");
       }
       setIsLoading(false);
-    } catch (err) {
-      console.error("Auth error:", err);
-      setError(err instanceof Error ? err.message : "Authentication failed. Please check your credentials.");
-      setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setIsLoading(true);
     setError(null);
+
     try {
-      await signIn("google");
+      const formData = new FormData(event.currentTarget);
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+      const dateOfBirth = formData.get("dateOfBirth") as string;
+      const fullName = formData.get("fullName") as string;
+
+      if (!email || !password || !dateOfBirth) {
+        setError("All fields are required");
+        setIsLoading(false);
+        return;
+      }
+
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters");
+        setIsLoading(false);
+        return;
+      }
+
+      // Create signup form with all data
+      const signupFormData = new FormData();
+      signupFormData.append("email", email);
+      signupFormData.append("password", password);
+      signupFormData.append("dateOfBirth", dateOfBirth);
+      signupFormData.append("fullName", fullName);
+
+      await signUp(signupFormData);
+      
+      // After successful signup, show success message
+      setAuthMode("login");
+      setError(null);
+      alert("✅ Account created! Check your email for confirmation link, then login. (Note: If email confirmation is disabled in Supabase settings, you can login directly)");
     } catch (err: any) {
-      console.error("[Auth] Google Login Exception:", err);
-      setError("Sign in failed. Please try again.");
+      console.error("[Auth] Signup error:", err);
+
+      if (err?.message?.includes("already")) {
+        setError("Email already registered. Please login.");
+      } else {
+        setError(err?.message || "Signup failed. Please try again.");
+      }
       setIsLoading(false);
     }
   };
 
-  const handleDemoLogin = async () => {
+  const handleGoogleSignup = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      await signIn("demo");
-      navigate(from, { replace: true });
-    } catch (err) {
-      setError("Demo access failed.");
+      console.log("[Auth] Starting Google signup...");
+      await signIn("google");
+      // Google will redirect after authentication
+    } catch (err: any) {
+      console.error("[Auth] Google signup error:", err);
+      setError(err?.message || "Google signup failed. Please try again.");
       setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center p-6 bg-black text-white">
-      {/* Background Decor */}
+      {/* Background */}
       <div className="fixed inset-0 cyber-grid opacity-20 pointer-events-none" />
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--neon-cyan)]/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--neon-purple)]/10 blur-[120px] rounded-full" />
@@ -85,7 +135,7 @@ function Auth() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-[450px] relative z-10"
       >
-        {/* Header */}
+        {/* Logo & Header */}
         <div className="text-center mb-10 space-y-4">
           <motion.div
             whileHover={{ scale: 1.1, rotate: 5 }}
@@ -96,53 +146,79 @@ function Auth() {
           </motion.div>
           <div>
             <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic">AlgoVerse</h1>
-            <p className="text-white/40 text-[10px] font-bold tracking-[0.3em] uppercase">Unified Intelligence Access</p>
+            <p className="text-white/40 text-[10px] font-bold tracking-[0.3em] uppercase">Learning Intelligence Platform</p>
           </div>
         </div>
 
-        <Card className="bg-black/40 backdrop-blur-2xl border-white/5 shadow-2xl overflow-hidden text-white border-t border-white/10 shadow-cyan-500/5">
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex-1" />
-              <span className="text-[8px] font-mono text-white/20 tracking-widest">ALGO.VERSION.2.4.0</span>
-            </div>
-            <CardTitle className="text-2xl font-black text-white text-center uppercase italic tracking-tighter flex items-center justify-center gap-3">
-              Welcome Operator
-            </CardTitle>
-            <CardDescription className="text-center text-white/30 uppercase text-[10px] font-bold tracking-widest">Secure access to the global algorithm repository</CardDescription>
-            <div className="mt-4 flex justify-center gap-2">
-              {!isSupabaseConfigured ? (
-                <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50 text-[10px] uppercase font-bold tracking-tighter px-3 py-1">
-                  Demo Mode Active
-                </Badge>
-              ) : (
-                <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-[10px] uppercase font-bold tracking-tighter px-3 py-1 flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Supabase Live Connection
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
+        {/* Choose Mode Screen */}
+        {authMode === "choose" && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <Card className="bg-black/40 backdrop-blur-2xl border-white/5 shadow-2xl overflow-hidden text-white">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-2xl font-black text-white text-center uppercase italic tracking-tighter">
+                  Welcome
+                </CardTitle>
+                <CardDescription className="text-center text-white/30 uppercase text-[10px] font-bold tracking-widest">
+                  Choose an option to continue
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button
+                  onClick={() => setAuthMode("login")}
+                  className="w-full h-14 bg-[var(--neon-cyan)] text-black hover:bg-[var(--neon-cyan)]/90 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg"
+                >
+                  <Rocket className="w-4 h-4 mr-2" />
+                  Login
+                </Button>
+                <Button
+                  onClick={() => setAuthMode("signup")}
+                  variant="outline"
+                  className="w-full h-14 border-white/10 text-white bg-white/5 hover:bg-white/10 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Create Account
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
-          <CardContent className="space-y-6 pt-4">
-            <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/5 p-1 rounded-xl">
-                <TabsTrigger value="login" className="data-[state=active]:bg-white/10 data-[state=active]:text-[var(--neon-cyan)] text-[10px] font-black uppercase tracking-widest transition-all py-3">
-                  <LogIn className="w-3 h-3 mr-2 text-[var(--neon-cyan)]" /> Login
-                </TabsTrigger>
-                <TabsTrigger value="signup" className="data-[state=active]:bg-white/10 data-[state=active]:text-[var(--neon-purple)] text-[10px] font-black uppercase tracking-widest transition-all py-3">
-                  <UserPlus className="w-3 h-3 mr-2 text-[var(--neon-purple)]" /> Sign Up
-                </TabsTrigger>
-              </TabsList>
-
-              <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-                <div className="space-y-4">
+        {/* Login Screen */}
+        {authMode === "login" && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <Card className="bg-black/40 backdrop-blur-2xl border-white/5 shadow-2xl overflow-hidden text-white">
+              <CardHeader className="pb-4 relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setAuthMode("choose")}
+                  className="absolute left-4 top-4 text-white/50 hover:text-white hover:bg-white/10"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+                <CardTitle className="text-2xl font-black text-white text-center uppercase italic tracking-tighter">
+                  Login
+                </CardTitle>
+                <CardDescription className="text-center text-white/30 uppercase text-[10px] font-bold tracking-widest">
+                  Enter your credentials
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleLogin} className="space-y-4">
                   <div className="relative group">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
                     <Input
                       name="email"
                       type="email"
-                      placeholder="Access Terminal ID (Email)"
+                      placeholder="Email"
                       className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
                       required
                       disabled={isLoading}
@@ -153,78 +229,154 @@ function Auth() {
                     <Input
                       name="password"
                       type="password"
-                      placeholder="Security Signature (Password)"
+                      placeholder="Password"
                       className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
                       required
                       disabled={isLoading}
                     />
                   </div>
-                </div>
 
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-[10px] text-red-400 bg-red-400/5 p-4 rounded-xl border border-red-400/20 flex items-start gap-3"
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-[10px] text-red-400 bg-red-400/5 p-4 rounded-xl border border-red-400/20 flex items-start gap-3"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{error}</span>
+                    </motion.div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-14 bg-[var(--neon-cyan)] text-black hover:bg-[var(--neon-cyan)]/90 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg"
                   >
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{error}</span>
-                  </motion.div>
-                )}
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Login"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
+        {/* Signup Screen */}
+        {authMode === "signup" && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <Card className="bg-black/40 backdrop-blur-2xl border-white/5 shadow-2xl overflow-hidden text-white">
+              <CardHeader className="pb-4 relative">
                 <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className={`w-full h-14 font-black uppercase italic tracking-[0.1em] text-sm rounded-xl transition-all shadow-lg ${mode === "login" ? 'bg-[var(--neon-cyan)] text-black hover:bg-[var(--neon-cyan)]/90 shadow-cyan-500/20' : 'bg-[var(--neon-purple)] text-white hover:bg-[var(--neon-purple)]/90 shadow-purple-500/20'}`}
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setAuthMode("choose")}
+                  className="absolute left-4 top-4 text-white/50 hover:text-white hover:bg-white/10"
                 >
-                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : mode === "login" ? "Initialize Session" : "Create Operator Profile"}
+                  <ArrowLeft className="w-4 h-4" />
                 </Button>
-              </form>
-            </Tabs>
+                <CardTitle className="text-2xl font-black text-white text-center uppercase italic tracking-tighter">
+                  Create Account
+                </CardTitle>
+                <CardDescription className="text-center text-white/30 uppercase text-[10px] font-bold tracking-widest">
+                  Join AlgoVerse
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="relative group">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="relative group">
+                    <Input
+                      name="fullName"
+                      type="text"
+                      placeholder="Full Name"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="relative group">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
+                    <Input
+                      name="dateOfBirth"
+                      type="date"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
+                    <Input
+                      name="password"
+                      type="password"
+                      placeholder="Password (min 8 characters)"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
 
-            <div className="relative py-2">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/5" />
-              </div>
-              <div className="relative flex justify-center text-[8px] uppercase font-black tracking-[0.3em]">
-                <span className="bg-[#0a0a0a] px-4 text-white/20 italic">Alternative Protocols</span>
-              </div>
-            </div>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-[10px] text-red-400 bg-red-400/5 p-4 rounded-xl border border-red-400/20 flex items-start gap-3"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{error}</span>
+                    </motion.div>
+                  )}
 
-            <div className="grid grid-cols-1 gap-3">
-              <Button
-                variant="outline"
-                type="button"
-                className="h-14 border-white/10 text-white bg-white/5 font-black text-[10px] uppercase tracking-[0.2em] italic transition-all hover:bg-white/10 hover:border-white/20 rounded-xl"
-                onClick={handleGoogleLogin}
-                disabled={isLoading}
-              >
-                <svg className="w-4 h-4 mr-3" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="currentColor" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z" />
-                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                Sign link with Google
-              </Button>
-              <Button
-                variant="outline"
-                type="button"
-                className="h-14 border-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] bg-[var(--neon-cyan)]/5 font-black text-[10px] uppercase tracking-[0.2em] italic transition-all hover:bg-[var(--neon-cyan)]/10 hover:border-[var(--neon-cyan)] shadow-[0_0_15px_rgba(0,243,255,0.05)] rounded-xl"
-                onClick={handleDemoLogin}
-                disabled={isLoading}
-              >
-                <Rocket className="w-3 h-3 mr-3 shadow-[0_0_10px_rgba(0,243,255,0.5)]" />
-                Launch Demo Override
-              </Button>
-            </div>
-          </CardContent>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-14 bg-[var(--neon-purple)] text-white hover:bg-[var(--neon-purple)]/90 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg"
+                  >
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
+                  </Button>
 
-          <CardFooter className="bg-white/5 border-t border-white/5 flex flex-col items-center py-4 space-y-1">
-            <p className="text-[8px] text-white/20 font-mono tracking-widest uppercase">ENCRYPTED // SUPABASE.CORE_V2.9</p>
-            <p className="text-[7px] text-white/10 font-mono uppercase">Unauthorized access is logged and prosecuted</p>
-          </CardFooter>
-        </Card>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-600"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-black text-gray-400">or continue with</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleGoogleSignup}
+                    disabled={isLoading}
+                    className="w-full h-14 bg-white text-black hover:bg-gray-100 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <img src="https://www.gstatic.com/firebaseapp/v8_0_0/images/firebase-logo.png" alt="Google" className="w-5 h-5" />
+                        Sign up with Google
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );

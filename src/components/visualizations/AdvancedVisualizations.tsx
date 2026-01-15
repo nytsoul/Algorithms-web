@@ -115,7 +115,7 @@ export function NetworkVisualization({
             {/* Nodes */}
             {nodes.map((node, index) => (
                 <motion.g
-                    key={node.id}
+                    key={`${node.id}-${index}`}
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: index * 0.05 }}

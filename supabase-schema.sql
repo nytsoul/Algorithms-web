@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS algorithms (
     domain VARCHAR(100) NOT NULL,
     domain_id INTEGER REFERENCES domains(id),
     category VARCHAR(100) NOT NULL,
+    paradigm VARCHAR(100),
     difficulty VARCHAR(20) NOT NULL CHECK (difficulty IN ('Beginner', 'Intermediate', 'Advanced', 'Expert')),
     visualization_type VARCHAR(20) CHECK (visualization_type IN ('array', 'tree', 'graph', 'matrix', 'network', 'none')),
     
@@ -47,6 +48,7 @@ CREATE TABLE IF NOT EXISTS algorithms (
     disadvantages JSONB DEFAULT '[]'::jsonb,
     related_algorithms JSONB DEFAULT '[]'::jsonb,
     research_references JSONB DEFAULT '[]'::jsonb,
+    real_world_examples JSONB DEFAULT '[]'::jsonb,
     tags JSONB DEFAULT '[]'::jsonb,
     
     -- Additional metadata

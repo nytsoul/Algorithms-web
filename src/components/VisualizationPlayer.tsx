@@ -21,7 +21,7 @@ import { GenericVisualization } from "@/visualizations/GenericVisualization";
 import { generateStepsForAlgorithm, VisualizationStep } from "@/lib/visualizations";
 import CodeHighlighter from "./CodeHighlighter";
 
-import { Algorithm } from "@/hooks/use-algorithms";
+import { Algorithm } from "@/lib/algorithms-data";
 
 interface VisualizationPlayerProps {
     algorithm: Algorithm;

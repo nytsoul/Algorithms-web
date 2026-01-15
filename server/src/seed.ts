@@ -70,7 +70,7 @@ function generateAlgorithm(index: number) {
             worst: "O(n²)"
         },
         space_complexity: faker.helpers.arrayElement(["O(1)", "O(n)", "O(log n)"]),
-        tags: [category.toLowerCase(), domain.toLowerCase(), faker.hacker.noun()],
+        tags: [(category as string).toLowerCase(), domain.toLowerCase(), faker.hacker.noun()],
         applications: [faker.hacker.phrase(), faker.hacker.phrase()],
         advantages: [faker.company.catchPhrase(), faker.company.catchPhrase()],
         disadvantages: [faker.hacker.phrase(), faker.hacker.phrase()],

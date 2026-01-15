@@ -35,6 +35,26 @@ export interface Algorithm {
     prerequisites?: string[];
     useCases?: string[];
     realWorldExamples?: string[];
+
+    // Additional documentation fields
+    stepByStepWorking?: string[];
+    dryRun?: string;
+    keyPoints?: string[];
+    problemStatement?: string;
+    precondition?: string;
+    practiceProblems?: Array<{
+        id: string;
+        title: string;
+        description: string;
+        platform: string;
+        difficulty: string;
+        url: string;
+        tags: string[];
+    }>;
+    flashcards?: Array<{
+        question: string;
+        answer: string;
+    }>;
 }
 
 export const MOCK_ALGORITHMS: Algorithm[] = [

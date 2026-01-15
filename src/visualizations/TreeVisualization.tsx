@@ -33,8 +33,8 @@ export function TreeVisualization({ nodes, edges }: TreeVisualizationProps) {
                     />
                 );
             })}
-            {nodes.map((node) => (
-                <motion.g key={node.id} initial={{ scale: 0 }} animate={{ scale: 1 }}>
+            {nodes.map((node, index) => (
+                <motion.g key={`${node.id}-${index}`} initial={{ scale: 0 }} animate={{ scale: 1 }}>
                     <circle
                         cx={node.x} cy={node.y} r={20}
                         fill="var(--card)"
