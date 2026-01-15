@@ -22,14 +22,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function Landing() {
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
 
   const features = [
     {
       icon: Code2,
-      title: "600+ Algorithms",
+      title: "1000+ Algorithms",
       description: "Cross-domain repository covering DSA, AI, ML, Networks, Security, Graphics",
       color: "text-[var(--neon-cyan)]",
     },
@@ -120,10 +123,11 @@ export default function Landing() {
             </Button>
             <Link to="/auth">
               <Button className="bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)] text-background hover:opacity-90 transition-opacity">
-                Get Started
+                {t('landing.get_started')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
+            <LanguageSwitcher />
           </div>
         </div>
       </motion.nav>
@@ -160,7 +164,7 @@ export default function Landing() {
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
               Explore, visualize, and benchmark{" "}
-              <span className="text-[var(--neon-pink)] font-semibold">600+ algorithms</span>{" "}
+              <span className="text-[var(--neon-pink)] font-semibold">1000+ algorithms</span>{" "}
               across multiple domains with{" "}
               <span className="text-[var(--neon-cyan)] font-semibold">AI-powered recommendations</span>
             </p>
@@ -236,7 +240,7 @@ export default function Landing() {
               </span>
             </h2>
             <p className="text-xl text-muted-foreground">
-              Comprehensive algorithm repository across all CS domains
+              Watch 1000+ algorithms come to life with step-by-step interactive visualization
             </p>
           </motion.div>
 

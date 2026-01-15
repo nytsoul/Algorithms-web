@@ -21,7 +21,7 @@ export default defineConfig({
         manualChunks: {
           // Vendor chunks for large libraries
           'react-vendor': ['react', 'react-dom', 'react-router'],
-          'convex-vendor': ['convex'],
+
           // Large UI library chunks
           'radix-ui': [
             '@radix-ui/react-accordion',
@@ -74,8 +74,22 @@ export default defineConfig({
       'react',
       'react-dom',
       'react-router',
-      'convex',
-      '@convex-dev/auth/react',
+      '@supabase/supabase-js',
+      'framer-motion',
+      'lucide-react',
+      '@zumer/snapdom',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-collapsible',
+      '@radix-ui/react-slider',
+      'next-themes',
+      'sonner',
+      'class-variance-authority',
+      'clsx',
+      'tailwind-merge',
+      'recharts',
+      'react-dom/client',
     ],
     // Exclude heavy optional dependencies for faster dev server start
     exclude: ['three', '@react-three/fiber', '@react-three/drei'],
