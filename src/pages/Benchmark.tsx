@@ -23,10 +23,11 @@ export default function Benchmark() {
   const focusedAlgoSlug = searchParams.get("algo");
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Only redirect if we've finished loading and user is not authenticated
+    if (!isLoading && !isAuthenticated) {
       navigate("/auth", { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleLogout = async () => {
     await signOut();
@@ -145,10 +146,6 @@ export default function Benchmark() {
 
     return () => clearInterval(interval);
   }, [isLiveUpdating, liveUpdateSpeed]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   if (isLoading || allAlgorithms.length === 0) {
     return (

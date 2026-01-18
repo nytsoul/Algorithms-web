@@ -16,7 +16,8 @@ export default function DomainDetail() {
     const navigate = useNavigate();
     const { isAuthenticated, signOut } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const { domainId } = useParams();
+    const { id, slug } = useParams();
+    const domainId = id || slug;
     const domain = getDomainById(Number(domainId));
     const { algorithms, isLoading } = useAlgorithmsByDomain(Number(domainId));
     const [searchQuery, setSearchQuery] = useState("");

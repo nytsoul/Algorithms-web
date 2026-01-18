@@ -65,10 +65,11 @@ export default function Visualize() {
     }, [algoSlug]);
 
     useEffect(() => {
-        if (!isAuthenticated) {
+        // Only redirect if we've finished loading and user is not authenticated
+        if (!isLoading && !isAuthenticated) {
             navigate("/auth", { replace: true });
         }
-    }, [isAuthenticated, navigate]);
+    }, [isAuthenticated, isLoading, navigate]);
 
     const handleLogout = async () => {
         await signOut();
@@ -92,10 +93,6 @@ export default function Visualize() {
     const filteredAlgorithms = selectedDomain
         ? allAlgorithms.filter((a) => a.domain === selectedDomain)
         : [];
-
-    if (!isAuthenticated) {
-        return null;
-    }
 
     if (isLoading) {
         return (

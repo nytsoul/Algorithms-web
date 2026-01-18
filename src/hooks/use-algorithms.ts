@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase, isSupabaseReady } from '@/lib/supabase';
 import { Algorithm, MOCK_ALGORITHMS } from '@/lib/algorithms-data';
 import { ALL_1000_ALGORITHMS } from '@/lib/all-algorithms';
+import { ALGORITHM_DOMAINS } from '@/lib/domains';
 
 export function useAlgorithms() {
     const [algorithms, setAlgorithms] = useState<Algorithm[]>([]);
@@ -55,7 +56,11 @@ export function useAlgorithmBySlug(slug: string) {
 
 export function useAlgorithmsByDomain(domainId: number) {
     const { algorithms, isLoading } = useAlgorithms();
-    const domainAlgorithms = algorithms.filter(a => a.domainId === domainId);
+    // Filter by domain name (which matches the domain in ALGORITHM_DOMAINS)
+    const domain = ALGORITHM_DOMAINS.find(d => d.id === domainId);
+    const domainAlgorithms = algorithms.filter(a => 
+        a.domain === domain?.name || a.domainId === domainId
+    );
     return { algorithms: domainAlgorithms, isLoading };
 }
 

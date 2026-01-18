@@ -31,15 +31,15 @@ import { ALGORITHM_DOMAINS } from "@/lib/domains";
 
 export default function Dashboard() {
     const { algorithms, isLoading: algorithmsLoading } = useAlgorithms();
-    const { isAuthenticated, user, signOut } = useAuth();
+    const { isAuthenticated, user, signOut, isLoading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedDomain, setSelectedDomain] = useState("all");
     const [selectedDifficulty, setSelectedDifficulty] = useState("all");
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    // Redirect to auth if not authenticated
-    if (!isAuthenticated) {
+    // Only redirect to auth if we've finished loading and user is not authenticated
+    if (!authLoading && !isAuthenticated) {
         navigate("/auth", { replace: true });
         return null;
     }
@@ -267,6 +267,15 @@ export default function Dashboard() {
                                                         <p className="text-xs text-muted-foreground/70 mt-2 max-w-xs">
                                                             {domainObj.description}
                                                         </p>
+                                                        <Link to={`/domain/${domainObj.id}`}>
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                size="sm"
+                                                                className="mt-3 text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10"
+                                                            >
+                                                                View All <ChevronRight className="w-3 h-3 ml-1" />
+                                                            </Button>
+                                                        </Link>
                                                     </div>
                                                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[var(--neon-cyan)]/30 to-transparent" />
                                                 </div>

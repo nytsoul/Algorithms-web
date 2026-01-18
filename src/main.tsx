@@ -84,6 +84,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/algorithm/:slug" element={<AlgorithmDetail />} />
               <Route path="/domains" element={<Domains />} />
               <Route path="/domains/:slug" element={<DomainDetail />} />
+              <Route path="/domain/:id" element={<DomainDetail />} />
               <Route path="/visualize" element={<Visualize />} />
               <Route path="/playground" element={<Playground />} />
               <Route path="/lab" element={<AlgorithmLab />} />
