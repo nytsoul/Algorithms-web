@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { ALL_1000_ALGORITHMS } from '../src/lib/all-algorithms';
+import { ALL_1000_ALGORITHMS } from '../src/lib/all-algorithms.ts';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
