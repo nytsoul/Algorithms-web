@@ -12,7 +12,9 @@ import {
     ChevronLeft,
     Sparkles,
     Database,
-    CheckCircle2
+    CheckCircle2,
+    Menu,
+    X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,6 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeEditor } from "@/components/CodeEditor";
 import { useAlgorithmBySlug } from "@/hooks/use-algorithms";
+import { useAuth } from "@/hooks/use-auth";
+import { Sidebar } from "@/components/Sidebar";
 import { toast } from "sonner";
 import {
     Select,
@@ -49,11 +53,22 @@ const Loader2 = ({ className }: { className?: string }) => (
 export default function Playground() {
     const { slug } = useParams();
     const navigate = useNavigate();
+    const { isAuthenticated, signOut } = useAuth();
+    const [sidebarOpen, setSidebarOpen] = useState(true);
     const { algorithm, isLoading } = useAlgorithmBySlug(slug || "");
     const [code, setCode] = useState("");
     const [output, setOutput] = useState<Array<{ type: 'log' | 'error' | 'success', msg: string }>>([]);
     const [isRunning, setIsRunning] = useState(false);
     const [language, setLanguage] = useState("javascript");
+
+    if (!isAuthenticated) {
+        navigate("/auth", { replace: true });
+        return null;
+    }
+
+    const handleLogout = async () => {
+        await signOut();
+    };
 
     useEffect(() => {
         if (algorithm) {
@@ -117,31 +132,44 @@ export default function Playground() {
 
     if (isLoading || !algorithm) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="w-full min-h-screen bg-background flex items-center justify-center">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[var(--neon-purple)] border-t-transparent" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-background pb-12">
+        <div className="w-full min-h-screen bg-background pb-12 flex">
+            {/* Sidebar */}
+            {sidebarOpen && <Sidebar onLogout={handleLogout} isOpen={sidebarOpen} />}
+
+            {/* Main Content */}
+            <div className={`flex-1 ${sidebarOpen ? "ml-80" : ""} flex flex-col transition-all duration-300`}>
             {/* Header */}
             <div className="border-b border-border/50 bg-card/30 backdrop-blur-md sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div className="w-full px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                            className="text-[var(--neon-cyan)]"
+                        >
+                            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                             <ChevronLeft className="w-5 h-5" />
                         </Button>
                         <div>
                             <h1 className="text-lg font-bold flex items-center gap-2">
                                 <Zap className="w-4 h-4 text-[var(--neon-yellow)]" />
-                                Playground: {algorithm.name}
+                                Playground: {algorithm?.name}
                             </h1>
                             <p className="text-xs text-muted-foreground flex items-center gap-2">
                                 <Badge variant="outline" className="text-[10px] px-1.5 h-4 border-[var(--neon-purple)]/50">
-                                    {algorithm.domain}
+                                    {algorithm?.domain}
                                 </Badge>
-                                • {algorithm.difficulty}
+                                • {algorithm?.difficulty}
                             </p>
                         </div>
                     </div>
@@ -173,7 +201,7 @@ export default function Playground() {
                 </div>
             </div>
 
-            <main className="max-w-7xl mx-auto px-6 pt-8 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-140px)]">
+            <main className="w-full px-6 pt-8 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-140px)]">
                 {/* Editor Side */}
                 <div className="lg:col-span-8 flex flex-col gap-4 h-full overflow-hidden">
                     <Card className="flex-1 border-[var(--neon-purple)]/20 bg-card/30 backdrop-blur-sm overflow-hidden flex flex-col">
@@ -298,6 +326,7 @@ export default function Playground() {
                     </div>
                 </div>
             </main>
+            </div>
         </div>
     );
 }

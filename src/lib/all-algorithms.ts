@@ -1,6 +1,7 @@
 import { Algorithm } from './algorithms-data';
 import { ALGORITHMS_601_690 } from './algorithms-601-690';
 import { ALGORITHMS_691_1000 } from './algorithms-691-1000';
+import { ALL_COMPREHENSIVE_ALGORITHMS } from './comprehensive-algorithm-implementations';
 
 // This file contains all 1000 algorithms organized by domain
 // Generated algorithmically with proper metadata
@@ -31,7 +32,7 @@ function generateAlgorithm(
         algorithmNumber: id,
         difficulty,
         paradigm,
-        tags: [category.toLowerCase(), domain.toLowerCase()],
+        tags: [...new Set([category.toLowerCase(), domain.toLowerCase()])],
         timeComplexity: {
             best: "O(1)",
             average: "O(n)",

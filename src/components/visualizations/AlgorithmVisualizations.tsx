@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
@@ -33,9 +34,9 @@ export function SortingVisualization({
                         animate={{ height: `${(value / maxValue) * 100}%` }}
                         transition={{ duration: 0.3 }}
                         className={`flex-1 rounded-t ${isSorted ? 'bg-[var(--neon-green)]' :
-                                isHighlighted ? 'bg-[var(--neon-cyan)]' :
-                                    isCompared ? 'bg-[var(--neon-pink)]' :
-                                        'bg-[var(--neon-purple)]/50'
+                            isHighlighted ? 'bg-[var(--neon-cyan)]' :
+                                isCompared ? 'bg-[var(--neon-pink)]' :
+                                    'bg-[var(--neon-purple)]/50'
                             }`}
                         style={{ minWidth: '8px' }}
                     >
@@ -142,7 +143,7 @@ export function GraphVisualization({
 
                 return (
                     <motion.g
-                        key={node.id}
+                        key={`${node.id}-${index}`}
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: index * 0.05 }}
@@ -214,10 +215,10 @@ export function TreeVisualization({ root, highlightedNodes = [], currentNode }: 
 
     if (!root) return <div className="text-center py-12">No tree to display</div>;
 
-    const renderEdges = (node: TreeNode | null): JSX.Element[] => {
+    const renderEdges = (node: TreeNode | null): React.ReactNode[] => {
         if (!node) return [];
 
-        const edges: JSX.Element[] = [];
+        const edges: React.ReactNode[] = [];
         const pos = positions.get(node.id);
 
         if (node.left && pos) {
@@ -259,10 +260,10 @@ export function TreeVisualization({ root, highlightedNodes = [], currentNode }: 
         return edges;
     };
 
-    const renderNodes = (node: TreeNode | null): JSX.Element[] => {
+    const renderNodes = (node: TreeNode | null): React.ReactNode[] => {
         if (!node) return [];
 
-        const nodes: JSX.Element[] = [];
+        const nodes: React.ReactNode[] = [];
         const pos = positions.get(node.id);
 
         if (pos) {

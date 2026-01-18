@@ -5,6 +5,7 @@ import path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import fetch from 'node-fetch';
 import algorithmRoutes from './routes/algorithms';
+import featureRoutes from './routes/features';
 
 // Load environment variables from specific paths
 // Prioritize root .env for shared Supabase credentials
@@ -134,6 +135,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/algorithms', algorithmRoutes);
+app.use('/api/features', featureRoutes);
 
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({
@@ -158,11 +160,25 @@ app.get('/api/config', (req: Request, res: Response) => {
 app.listen(PORT, async () => {
   console.log(`\n🚀 Server is running on http://localhost:${PORT}`);
   console.log('📡 Available endpoints:');
-  console.log(`   - GET  /api/health       - Server status`);
-  console.log(`   - GET  /api/config       - Configuration info`);
-  console.log(`   - GET  /api/algorithms   - List all algorithms`);
-  console.log(`   - GET  /api/algorithms/:id - Get algorithm by ID`);
-  console.log(`   - POST /api/algorithms   - Create new algorithm\n`);
+  console.log(`   === Core API ===`);
+  console.log(`   - GET  /api/health              - Server status`);
+  console.log(`   - GET  /api/config              - Configuration info`);
+  console.log(`   === Algorithms ===`);
+  console.log(`   - GET  /api/algorithms          - List all algorithms`);
+  console.log(`   - GET  /api/algorithms/:id      - Get algorithm by ID`);
+  console.log(`   - POST /api/algorithms          - Create new algorithm`);
+  console.log(`   === Features ===`);
+  console.log(`   - GET  /api/features/progress/:userId          - Get user progress`);
+  console.log(`   - POST /api/features/progress/:userId          - Update user progress`);
+  console.log(`   - GET  /api/features/bookmarks/:userId         - Get bookmarks`);
+  console.log(`   - POST /api/features/bookmarks/:userId         - Add bookmark`);
+  console.log(`   - DELETE /api/features/bookmarks/:userId/:algoId - Remove bookmark`);
+  console.log(`   - GET  /api/features/recommendations/:userId   - Get recommendations`);
+  console.log(`   - GET  /api/features/search                    - Search algorithms`);
+  console.log(`   - GET  /api/features/domain/:domain            - Get by domain`);
+  console.log(`   - GET  /api/features/stats/:userId             - Get user stats`);
+  console.log(`   - POST /api/features/compare                   - Compare algorithms`);
+  console.log(`   - GET  /api/features/visualization/:algoId     - Get visualization\n`);
 
   await checkDatabaseConnection();
 });

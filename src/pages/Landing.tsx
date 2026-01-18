@@ -22,14 +22,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function Landing() {
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
 
   const features = [
     {
       icon: Code2,
-      title: "600+ Algorithms",
+      title: "1000+ Algorithms",
       description: "Cross-domain repository covering DSA, AI, ML, Networks, Security, Graphics",
       color: "text-[var(--neon-cyan)]",
     },
@@ -77,7 +80,7 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="w-full min-h-screen bg-background relative overflow-hidden">
       {/* Cyberpunk Grid Background */}
       <div className="fixed inset-0 cyber-grid pointer-events-none" />
       <div className="fixed inset-0 bg-gradient-to-b from-transparent via-background/50 to-background pointer-events-none" />
@@ -91,7 +94,7 @@ export default function Landing() {
         animate={{ y: 0 }}
         className="relative z-50 border-b border-border/50 backdrop-blur-xl bg-background/80"
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="w-full px-6 py-4 flex items-center justify-between">
           <motion.div
             className="flex items-center gap-3"
             whileHover={{ scale: 1.05 }}
@@ -120,17 +123,18 @@ export default function Landing() {
             </Button>
             <Link to="/auth">
               <Button className="bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-purple)] text-background hover:opacity-90 transition-opacity">
-                Get Started
+                {t('landing.get_started')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
+            <LanguageSwitcher />
           </div>
         </div>
       </motion.nav>
 
       {/* Hero Section */}
       <section className="relative z-10 pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -160,7 +164,7 @@ export default function Landing() {
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed">
               Explore, visualize, and benchmark{" "}
-              <span className="text-[var(--neon-pink)] font-semibold">600+ algorithms</span>{" "}
+              <span className="text-[var(--neon-pink)] font-semibold">1000+ algorithms</span>{" "}
               across multiple domains with{" "}
               <span className="text-[var(--neon-cyan)] font-semibold">AI-powered recommendations</span>
             </p>
@@ -178,16 +182,7 @@ export default function Landing() {
                   <div className="absolute inset-0 bg-gradient-to-r from-[var(--neon-pink)] to-[var(--neon-purple)] opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Button>
               </Link>
-              <Link to="/visualize">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-[var(--neon-cyan)] text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10 text-lg px-8 py-6"
-                >
-                  <Zap className="w-5 h-5 mr-2" />
-                  Live Visualization
-                </Button>
-              </Link>
+              
             </div>
           </motion.div>
 
@@ -223,7 +218,7 @@ export default function Landing() {
 
       {/* Domain Coverage */}
       <section className="relative z-10 py-20 px-6 border-t border-border/30">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -236,7 +231,7 @@ export default function Landing() {
               </span>
             </h2>
             <p className="text-xl text-muted-foreground">
-              Comprehensive algorithm repository across all CS domains
+              Watch 1000+ algorithms come to life with step-by-step interactive visualization
             </p>
           </motion.div>
 
@@ -294,7 +289,7 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border/30 py-8 px-6 mt-20">
-        <div className="max-w-7xl mx-auto text-center text-muted-foreground">
+        <div className="w-full text-center text-muted-foreground">
           <p>© 2026 AlgoVerse - Unified Algorithm Intelligence Platform</p>
           <p className="text-sm mt-2">
             Bridging the gap between algorithm theory and real-world application

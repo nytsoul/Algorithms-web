@@ -24,6 +24,8 @@ const checkSupabaseConfig = () => {
 
 const configStatus = checkSupabaseConfig();
 export const isSupabaseReady = configStatus.ready;
+export const isSupabaseConfigured = isSupabaseReady; // Alias for backward compatibility
+export const isSupabaseAvailable = () => isSupabaseReady; // Helper function alias
 export const supabaseConfigReason = configStatus.reason;
 
 // Create a real Supabase client if configured, otherwise use a placeholder

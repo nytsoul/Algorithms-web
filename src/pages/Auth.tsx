@@ -1,291 +1,391 @@
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
+import { AlertCircle, ArrowLeft, Mail, Lock, Calendar, Loader2, Rocket, UserPlus } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
+import { motion } from "framer-motion";
 
 interface AuthProps {
   redirectAfterAuth?: string;
 }
 
-function Auth({ redirectAfterAuth }: AuthProps = {}) {
-  const { isLoading: authLoading, isAuthenticated, signIn } = useAuth();
+type AuthMode = "choose" | "login" | "signup";
+
+function Auth() {
+  const { isLoading: authLoading, isAuthenticated, signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState<"signIn" | { email: string }>("signIn");
-  const [otp, setOtp] = useState("");
+  const location = useLocation();
+  const [authMode, setAuthMode] = useState<AuthMode>("choose");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const from = location.state?.from?.pathname || "/dashboard";
+
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
+      navigate(from, { replace: true });
     }
-  }, [authLoading, isAuthenticated, navigate, redirectAfterAuth]);
-  const handleEmailSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  }, [authLoading, isAuthenticated, navigate, from]);
+
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+
     try {
       const formData = new FormData(event.currentTarget);
-      await signIn("email-otp", formData);
-      setStep({ email: formData.get("email") as string });
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Email sign-in error:", error);
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to send verification code. Please try again.",
-      );
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+
+      if (!email || !password) {
+        setError("Email and password are required");
+        setIsLoading(false);
+        return;
+      }
+
+      await signIn("email-password", formData);
+    } catch (err: any) {
+      console.error("[Auth] Login error:", err);
+      
+      if (err?.message?.includes("Invalid") || err?.message?.includes("not found")) {
+        setError("❌ Invalid email or password. If you just signed up, please check your email for confirmation link.");
+      } else if (err?.message?.includes("Email not confirmed")) {
+        setError("❌ Please confirm your email first. Check your inbox for confirmation link.");
+      } else {
+        setError(err?.message || "Login failed. Please try again.");
+      }
       setIsLoading(false);
     }
   };
 
-  const handleOtpSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+
     try {
       const formData = new FormData(event.currentTarget);
-      await signIn("email-otp", formData);
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+      const dateOfBirth = formData.get("dateOfBirth") as string;
+      const fullName = formData.get("fullName") as string;
 
-      console.log("signed in");
+      if (!email || !password || !dateOfBirth) {
+        setError("All fields are required");
+        setIsLoading(false);
+        return;
+      }
 
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
-    } catch (error) {
-      console.error("OTP verification error:", error);
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters");
+        setIsLoading(false);
+        return;
+      }
 
-      setError("The verification code you entered is incorrect.");
+      // Create signup form with all data
+      const signupFormData = new FormData();
+      signupFormData.append("email", email);
+      signupFormData.append("password", password);
+      signupFormData.append("dateOfBirth", dateOfBirth);
+      signupFormData.append("fullName", fullName);
+
+      await signUp(signupFormData);
+      
+      // After successful signup, show success message
+      setAuthMode("login");
+      setError(null);
+      alert("✅ Account created! Check your email for confirmation link, then login. (Note: If email confirmation is disabled in Supabase settings, you can login directly)");
+    } catch (err: any) {
+      console.error("[Auth] Signup error:", err);
+
+      if (err?.message?.includes("already")) {
+        setError("Email already registered. Please login.");
+      } else {
+        setError(err?.message || "Signup failed. Please try again.");
+      }
       setIsLoading(false);
-
-      setOtp("");
     }
   };
 
-  const handleGuestLogin = async () => {
+  const handleGoogleSignup = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      console.log("Attempting anonymous sign in...");
-      await signIn("anonymous");
-      console.log("Anonymous sign in successful");
-      const redirect = redirectAfterAuth || "/";
-      navigate(redirect);
-    } catch (error) {
-      console.error("Guest login error:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
-      setError(`Failed to sign in as guest: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.log("[Auth] Starting Google signup...");
+      await signIn("google");
+      // Google will redirect after authentication
+    } catch (err: any) {
+      console.error("[Auth] Google signup error:", err);
+      setError(err?.message || "Google signup failed. Please try again.");
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center p-6 bg-black text-white">
+      {/* Background */}
+      <div className="fixed inset-0 cyber-grid opacity-20 pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--neon-cyan)]/10 blur-[120px] rounded-full" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--neon-purple)]/10 blur-[120px] rounded-full" />
 
-      
-      {/* Auth Content */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex items-center justify-center h-full flex-col">
-        <Card className="min-w-[350px] pb-0 border shadow-md">
-          {step === "signIn" ? (
-            <>
-              <CardHeader className="text-center">
-              <div className="flex justify-center">
-                    <img
-                      src="./logo.svg"
-                      alt="Lock Icon"
-                      width={64}
-                      height={64}
-                      className="rounded-lg mb-4 mt-4 cursor-pointer"
-                      onClick={() => navigate("/")}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-[450px] relative z-10"
+      >
+        {/* Logo & Header */}
+        <div className="text-center mb-10 space-y-4">
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            className="w-16 h-16 bg-gradient-to-br from-[var(--neon-cyan)] to-[var(--neon-purple)] rounded-2xl mx-auto flex items-center justify-center shadow-[0_0_30px_rgba(0,243,255,0.3)] cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            <Rocket className="w-8 h-8 text-black" />
+          </motion.div>
+          <div>
+            <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic">AlgoVerse</h1>
+            <p className="text-white/40 text-[10px] font-bold tracking-[0.3em] uppercase">Learning Intelligence Platform</p>
+          </div>
+        </div>
+
+        {/* Choose Mode Screen */}
+        {authMode === "choose" && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <Card className="bg-black/40 backdrop-blur-2xl border-white/5 shadow-2xl overflow-hidden text-white">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-2xl font-black text-white text-center uppercase italic tracking-tighter">
+                  Welcome
+                </CardTitle>
+                <CardDescription className="text-center text-white/30 uppercase text-[10px] font-bold tracking-widest">
+                  Choose an option to continue
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button
+                  onClick={() => setAuthMode("login")}
+                  className="w-full h-14 bg-[var(--neon-cyan)] text-black hover:bg-[var(--neon-cyan)]/90 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg"
+                >
+                  <Rocket className="w-4 h-4 mr-2" />
+                  Login
+                </Button>
+                <Button
+                  onClick={() => setAuthMode("signup")}
+                  variant="outline"
+                  className="w-full h-14 border-white/10 text-white bg-white/5 hover:bg-white/10 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Create Account
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Login Screen */}
+        {authMode === "login" && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <Card className="bg-black/40 backdrop-blur-2xl border-white/5 shadow-2xl overflow-hidden text-white">
+              <CardHeader className="pb-4 relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setAuthMode("choose")}
+                  className="absolute left-4 top-4 text-white/50 hover:text-white hover:bg-white/10"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+                <CardTitle className="text-2xl font-black text-white text-center uppercase italic tracking-tighter">
+                  Login
+                </CardTitle>
+                <CardDescription className="text-center text-white/30 uppercase text-[10px] font-bold tracking-widest">
+                  Enter your credentials
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="relative group">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
                     />
                   </div>
-                <CardTitle className="text-xl">Get Started</CardTitle>
-                <CardDescription>
-                  Enter your email to log in or sign up
-                </CardDescription>
-              </CardHeader>
-              <form onSubmit={handleEmailSubmit}>
-                <CardContent>
-                  
-                  <div className="relative flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        name="email"
-                        placeholder="name@example.com"
-                        type="email"
-                        className="pl-9"
-                        disabled={isLoading}
-                        required
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      size="icon"
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
+                    <Input
+                      name="password"
+                      type="password"
+                      placeholder="Password"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
                       disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <ArrowRight className="h-4 w-4" />
-                      )}
-                    </Button>
+                    />
                   </div>
-                  {error && (
-                    <p className="mt-2 text-sm text-red-500">{error}</p>
-                  )}
-                  
-                  <div className="mt-4">
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">
-                          Or
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full mt-4"
-                      onClick={handleGuestLogin}
-                      disabled={isLoading}
-                    >
-                      <UserX className="mr-2 h-4 w-4" />
-                      Continue as Guest
-                    </Button>
-                  </div>
-                </CardContent>
-              </form>
-            </>
-          ) : (
-            <>
-              <CardHeader className="text-center mt-4">
-                <CardTitle>Check your email</CardTitle>
-                <CardDescription>
-                  We've sent a code to {step.email}
-                </CardDescription>
-              </CardHeader>
-              <form onSubmit={handleOtpSubmit}>
-                <CardContent className="pb-4">
-                  <input type="hidden" name="email" value={step.email} />
-                  <input type="hidden" name="code" value={otp} />
 
-                  <div className="flex justify-center">
-                    <InputOTP
-                      value={otp}
-                      onChange={setOtp}
-                      maxLength={6}
-                      disabled={isLoading}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && otp.length === 6 && !isLoading) {
-                          // Find the closest form and submit it
-                          const form = (e.target as HTMLElement).closest("form");
-                          if (form) {
-                            form.requestSubmit();
-                          }
-                        }
-                      }}
-                    >
-                      <InputOTPGroup>
-                        {Array.from({ length: 6 }).map((_, index) => (
-                          <InputOTPSlot key={index} index={index} />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
                   {error && (
-                    <p className="mt-2 text-sm text-red-500 text-center">
-                      {error}
-                    </p>
-                  )}
-                  <p className="text-sm text-muted-foreground text-center mt-4">
-                    Didn't receive a code?{" "}
-                    <Button
-                      variant="link"
-                      className="p-0 h-auto"
-                      onClick={() => setStep("signIn")}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-[10px] text-red-400 bg-red-400/5 p-4 rounded-xl border border-red-400/20 flex items-start gap-3"
                     >
-                      Try again
-                    </Button>
-                  </p>
-                </CardContent>
-                <CardFooter className="flex-col gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{error}</span>
+                    </motion.div>
+                  )}
+
                   <Button
                     type="submit"
-                    className="w-full"
-                    disabled={isLoading || otp.length !== 6}
+                    disabled={isLoading}
+                    className="w-full h-14 bg-[var(--neon-cyan)] text-black hover:bg-[var(--neon-cyan)]/90 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg"
+                  >
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Login"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Signup Screen */}
+        {authMode === "signup" && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <Card className="bg-black/40 backdrop-blur-2xl border-white/5 shadow-2xl overflow-hidden text-white">
+              <CardHeader className="pb-4 relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setAuthMode("choose")}
+                  className="absolute left-4 top-4 text-white/50 hover:text-white hover:bg-white/10"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
+                <CardTitle className="text-2xl font-black text-white text-center uppercase italic tracking-tighter">
+                  Create Account
+                </CardTitle>
+                <CardDescription className="text-center text-white/30 uppercase text-[10px] font-bold tracking-widest">
+                  Join AlgoVerse
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="relative group">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
+                    <Input
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="relative group">
+                    <Input
+                      name="fullName"
+                      type="text"
+                      placeholder="Full Name"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="relative group">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
+                    <Input
+                      name="dateOfBirth"
+                      type="date"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-[var(--neon-cyan)] transition-colors" />
+                    <Input
+                      name="password"
+                      type="password"
+                      placeholder="Password (min 8 characters)"
+                      className="pl-10 h-14 bg-white/5 border-white/10 focus:border-[var(--neon-cyan)]/50 focus:ring-0 transition-all text-white placeholder:text-white/20 rounded-xl"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-[10px] text-red-400 bg-red-400/5 p-4 rounded-xl border border-red-400/20 flex items-start gap-3"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{error}</span>
+                    </motion.div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-14 bg-[var(--neon-purple)] text-white hover:bg-[var(--neon-purple)]/90 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg"
+                  >
+                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
+                  </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-600"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-black text-gray-400">or continue with</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleGoogleSignup}
+                    disabled={isLoading}
+                    className="w-full h-14 bg-white text-black hover:bg-gray-100 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
                   >
                     {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Verifying...
-                      </>
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
-                        Verify code
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                        <img src="https://www.gstatic.com/firebaseapp/v8_0_0/images/firebase-logo.png" alt="Google" className="w-5 h-5" />
+                        Sign up with Google
                       </>
                     )}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setStep("signIn")}
-                    disabled={isLoading}
-                    className="w-full"
-                  >
-                    Use different email
-                  </Button>
-                </CardFooter>
-              </form>
-            </>
-          )}
-
-          <div className="py-4 px-6 text-xs text-center text-muted-foreground bg-muted border-t rounded-b-lg">
-            Secured by{" "}
-            <a
-              href="https://vly.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-primary transition-colors"
-            >
-              vly.ai
-            </a>
-          </div>
-        </Card>
-        </div>
-      </div>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </motion.div>
     </div>
   );
 }
 
-export default function AuthPage(props: AuthProps) {
+export default function AuthPage({ redirectAfterAuth }: AuthProps) {
   return (
-    <Suspense>
-      <Auth {...props} />
+    <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center font-mono text-[var(--neon-cyan)] uppercase tracking-widest animate-pulse">Initializing Security Layers...</div>}>
+      <Auth />
     </Suspense>
   );
 }
