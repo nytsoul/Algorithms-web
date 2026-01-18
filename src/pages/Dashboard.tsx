@@ -275,7 +275,7 @@ export default function Dashboard() {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                                     {domainAlgorithms.map((algo, index) => (
                                                         <motion.div
-                                                            key={`${domainObj.id}-${algo.id || algo.slug}-${index}`}
+                                                            key={`${domainObj.id}-${algo.slug}-${index}`}
                                                             initial={{ opacity: 0, y: 20 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             transition={{ delay: 0.5 + index * 0.03 }}
