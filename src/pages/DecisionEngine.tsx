@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
@@ -10,32 +10,33 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Brain, 
-  Cpu, 
-  HardDrive, 
-  Zap, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Brain,
+  Cpu,
+  HardDrive,
+  Zap,
+  AlertTriangle,
+  CheckCircle,
   TrendingUp,
   Shield,
   Target,
   Lightbulb,
   ChevronRight
 } from "lucide-react";
-import { 
-  AlgorithmDecisionEngine, 
-  decisionEngine, 
-  detectSystemContext, 
+import {
+  AlgorithmDecisionEngine,
+  decisionEngine,
+  detectSystemContext,
   SystemContext,
-  DecisionResult 
+  DecisionResult
 } from "@/lib/decision-engine";
 import { securityTester, SecurityAnalysis } from "@/lib/security-tester";
 import { getRealWorldUseCases } from "@/lib/real-world-mappings";
 
 export default function DecisionEngine() {
   const navigate = useNavigate();
-  const { isAuthenticated, signOut } = useAuth();
+  const { isAuthenticated, signOut, isLoading: authLoading } = useAuth();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [context, setContext] = useState<SystemContext>(detectSystemContext());
   const [decision, setDecision] = useState<DecisionResult | null>(null);
@@ -50,10 +51,10 @@ export default function DecisionEngine() {
   const [isSorted, setIsSorted] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/auth", { replace: true });
+    if (!authLoading && !isAuthenticated) {
+      navigate("/auth", { replace: true, state: { from: location } });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authLoading, navigate, location]);
 
   const handleLogout = async () => {
     await signOut();
@@ -61,9 +62,9 @@ export default function DecisionEngine() {
 
   const handleAnalyze = () => {
     setLoading(true);
-    
+
     let result: DecisionResult;
-    
+
     if (problemType === 'sorting') {
       result = decisionEngine.decideSortingAlgorithm(parseInt(inputSize), dataDistribution);
     } else {
@@ -85,6 +86,14 @@ export default function DecisionEngine() {
 
     setLoading(false);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[var(--neon-cyan)] border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) return null;
 
@@ -380,10 +389,10 @@ export default function DecisionEngine() {
                                 security.dosRisk.score >= 80
                                   ? 'bg-red-500/20 text-red-400'
                                   : security.dosRisk.score >= 60
-                                  ? 'bg-orange-500/20 text-orange-400'
-                                  : security.dosRisk.score >= 40
-                                  ? 'bg-yellow-500/20 text-yellow-400'
-                                  : 'bg-green-500/20 text-green-400'
+                                    ? 'bg-orange-500/20 text-orange-400'
+                                    : security.dosRisk.score >= 40
+                                      ? 'bg-yellow-500/20 text-yellow-400'
+                                      : 'bg-green-500/20 text-green-400'
                               }
                             >
                               DoS Risk: {security.dosRisk.score}/100
@@ -407,8 +416,8 @@ export default function DecisionEngine() {
                                     vuln.severity === 'critical'
                                       ? 'border-red-500 text-red-500'
                                       : vuln.severity === 'high'
-                                      ? 'border-orange-500 text-orange-500'
-                                      : 'border-yellow-500 text-yellow-500'
+                                        ? 'border-orange-500 text-orange-500'
+                                        : 'border-yellow-500 text-yellow-500'
                                   }
                                 >
                                   {vuln.severity.toUpperCase()}

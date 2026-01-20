@@ -33,8 +33,7 @@
     }
   },
   "include": [
-    "src",
-    "vly-toolbar-readonly.tsx"
+    "src"
   ],
   "exclude": [
     "src/seed-comprehensive.ts"

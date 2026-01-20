@@ -1,2 +1,0 @@
-﻿src/hooks/use-auth.ts(47,54): error TS7006: Parameter '_event' implicitly has an 'any' type.
-src/hooks/use-auth.ts(47,62): error TS7006: Parameter 'session' implicitly has an 'any' type.

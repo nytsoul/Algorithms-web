@@ -1,4 +1,4 @@
-import { AlgorithmData } from "../algorithms-data";
+import type { AlgorithmData } from "../algorithm-schema";
 
 export interface VisualizationStep {
     description: string;

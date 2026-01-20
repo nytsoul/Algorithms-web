@@ -74,14 +74,14 @@ export default function VisualizationPlayer({ algorithm, compact = false }: Visu
     const currentStepData = steps[currentStep] || { description: "Initializing..." };
 
     const renderVisualization = () => {
-        const type = algorithm?.visualizationType || "none";
+        const type: string = algorithm?.visualizationType || "none";
 
         switch (type) {
             case "array":
                 if (algorithm.name.toLowerCase().includes("sort")) {
                     return (
                         <ArrayGridVisualization
-                            data={currentStepData.data || []}
+                            data={(currentStepData.data as number[]) || []}
                             activeIndex={currentStepData.activeIndices || []}
                             comparedIndex={currentStepData.comparedIndices || []}
                             sortedIndex={currentStepData.sortedIndices || []}
@@ -91,7 +91,7 @@ export default function VisualizationPlayer({ algorithm, compact = false }: Visu
                 }
                 return (
                     <ArrayVisualization
-                        data={currentStepData.data || []}
+                        data={(currentStepData.data as any[]) || []}
                         activeIndex={currentStepData.activeIndices || []}
                         comparedIndex={currentStepData.comparedIndices || []}
                         sortedIndex={currentStepData.sortedIndices || []}
@@ -107,7 +107,7 @@ export default function VisualizationPlayer({ algorithm, compact = false }: Visu
             case "matrix":
                 return (
                     <MatrixVisualization
-                        data={currentStepData.data || []}
+                        data={(currentStepData.data as any[][]) || []}
                         activeCell={currentStepData.activeCell}
                     />
                 );

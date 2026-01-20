@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 import { Code2, TrendingUp, Zap, ArrowRight, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,17 +13,18 @@ import { Algorithm } from "@/lib/algorithms-data";
 
 export default function Compare() {
     const navigate = useNavigate();
-    const { isAuthenticated, signOut } = useAuth();
+    const location = useLocation();
+    const { isAuthenticated, signOut, isLoading: authLoading } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const { algorithms, isLoading } = useAlgorithms();
     const [selectedAlgorithms, setSelectedAlgorithms] = useState<Algorithm[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            navigate("/auth", { replace: true });
+        if (!authLoading && !isAuthenticated) {
+            navigate("/auth", { replace: true, state: { from: location } });
         }
-    }, [isAuthenticated, navigate]);
+    }, [authLoading, isAuthenticated, navigate, location]);
 
     const handleLogout = async () => {
         await signOut();
@@ -51,6 +52,14 @@ export default function Compare() {
         if (complexity.includes("n")) return 3;
         return 6;
     };
+
+    if (authLoading) {
+        return (
+            <div className="w-full min-h-screen bg-background flex items-center justify-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[var(--neon-purple)] border-t-transparent" />
+            </div>
+        );
+    }
 
     if (!isAuthenticated) {
         return null;

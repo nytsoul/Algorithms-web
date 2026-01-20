@@ -165,7 +165,7 @@ export function useAuth() {
     if (provider === "email-password" && formData) {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
-      
+
       console.log("[Auth] Attempting login for:", email);
 
       // Try Supabase Auth first
@@ -186,7 +186,7 @@ export function useAuth() {
       console.log("[Auth] Window origin:", window.location.origin);
       console.log("[Auth] Redirect URL being sent to Google:", redirectUrl);
       console.log("[Auth] ⚠️ Make sure this exact URL is added to Google Cloud Console OAuth credentials!");
-      
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
@@ -236,10 +236,10 @@ export function useAuth() {
     if (data.user) {
       try {
         console.log("[Auth] Saving user profile to database...");
-        
+
         // Hash the password (simple approach - should use bcrypt in production)
         const passwordHash = btoa(password); // Base64 encoding for now
-        
+
         const { error: profileError } = await supabase
           .from("user_profiles")
           .insert([
@@ -267,17 +267,101 @@ export function useAuth() {
   };
 
   const signOut = async () => {
+    console.log("[Auth] 🚪 Logout initiated...");
     try {
       if (isSupabaseConfigured) {
+        console.log("[Auth] Signing out from Supabase...");
         await supabase.auth.signOut();
+        console.log("[Auth] ✅ Supabase sign out successful");
+      } else {
+        console.log("[Auth] Supabase not configured, skipping auth sign out");
       }
     } catch (error) {
-      console.error("Error during sign out:", error);
+      console.error("[Auth] ❌ Error during sign out:", error);
     } finally {
+      console.log("[Auth] Clearing local state...");
       setUser(null);
       setIsMock(false);
       localStorage.removeItem("algoverse_mock_user");
+      console.log("[Auth] 🔄 Redirecting to home page...");
       window.location.href = "/";
+    }
+  };
+
+  const updateProfile = async (updates: { full_name?: string; bio?: string; avatar_url?: string; social_links?: any }) => {
+    if (isMock) {
+      const mockUser = JSON.parse(localStorage.getItem("algoverse_mock_user") || "{}");
+      const updatedUser = {
+        ...mockUser,
+        user_metadata: {
+          ...mockUser.user_metadata,
+          ...updates
+        }
+      };
+      localStorage.setItem("algoverse_mock_user", JSON.stringify(updatedUser));
+      setUser(updatedUser as any);
+      return { success: true };
+    }
+
+    if (!isSupabaseConfigured) throw new Error("Supabase not configured");
+
+    try {
+      // Update Auth Metadata
+      const { data: authData, error: authError } = await supabase.auth.updateUser({
+        data: updates
+      });
+
+      if (authError) throw authError;
+
+      // Update user_profiles table
+      const { error: profileError } = await supabase
+        .from("user_profiles")
+        .update({
+          full_name: updates.full_name,
+          bio: updates.bio,
+          avatar_url: updates.avatar_url,
+          social_links: updates.social_links,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", user?.id);
+
+      if (profileError) {
+        console.warn("[Auth] Table update failed, but auth metadata updated:", profileError.message);
+      }
+
+      setUser(authData.user);
+      return { success: true };
+    } catch (err: any) {
+      console.error("[Auth] Update profile failed:", err.message);
+      throw err;
+    }
+  };
+
+  const updateSettings = async (settings: { theme?: string; language?: string; notifications_enabled?: boolean; email_digest_enabled?: boolean }) => {
+    if (isMock) {
+      localStorage.setItem("algoverse_settings", JSON.stringify({
+        ...(JSON.parse(localStorage.getItem("algoverse_settings") || "{}")),
+        ...settings
+      }));
+      return { success: true };
+    }
+
+    if (!isSupabaseConfigured) throw new Error("Supabase not configured");
+
+    try {
+      const { error } = await supabase
+        .from("user_settings")
+        .upsert({
+          user_id: user?.id,
+          ...settings,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+      return { success: true };
+    } catch (err: any) {
+      console.error("[Auth] Update settings failed:", err.message);
+      throw err;
     }
   };
 
@@ -289,5 +373,7 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    updateProfile,
+    updateSettings
   };
 }

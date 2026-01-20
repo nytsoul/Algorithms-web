@@ -48,7 +48,7 @@ function Auth() {
       await signIn("email-password", formData);
     } catch (err: any) {
       console.error("[Auth] Login error:", err);
-      
+
       if (err?.message?.includes("Invalid") || err?.message?.includes("not found")) {
         setError("❌ Invalid email or password. If you just signed up, please check your email for confirmation link.");
       } else if (err?.message?.includes("Email not confirmed")) {
@@ -92,7 +92,7 @@ function Auth() {
       signupFormData.append("fullName", fullName);
 
       await signUp(signupFormData);
-      
+
       // After successful signup, show success message
       setAuthMode("login");
       setError(null);
@@ -109,16 +109,16 @@ function Auth() {
     }
   };
 
-  const handleGoogleSignup = async () => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      console.log("[Auth] Starting Google signup...");
+      console.log("[Auth] Starting Google login...");
       await signIn("google");
       // Google will redirect after authentication
     } catch (err: any) {
-      console.error("[Auth] Google signup error:", err);
-      setError(err?.message || "Google signup failed. Please try again.");
+      console.error("[Auth] Google login error:", err);
+      setError(err?.message || "Google login failed. Please try again.");
       setIsLoading(false);
     }
   };
@@ -254,6 +254,31 @@ function Auth() {
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Login"}
                   </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-600"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-black text-gray-400">or continue with</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={isLoading}
+                    className="w-full h-14 bg-white text-black hover:bg-gray-100 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <img src="https://www.gstatic.com/firebaseapp/v8_0_0/images/firebase-logo.png" alt="Google" className="w-5 h-5" />
+                        Sign in with Google
+                      </>
+                    )}
+                  </Button>
                 </form>
               </CardContent>
             </Card>
@@ -346,31 +371,6 @@ function Auth() {
                     className="w-full h-14 bg-[var(--neon-purple)] text-white hover:bg-[var(--neon-purple)]/90 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg"
                   >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
-                  </Button>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-600"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-black text-gray-400">or continue with</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    onClick={handleGoogleSignup}
-                    disabled={isLoading}
-                    className="w-full h-14 bg-white text-black hover:bg-gray-100 font-black uppercase italic tracking-[0.1em] rounded-xl transition-all shadow-lg flex items-center justify-center gap-3"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <>
-                        <img src="https://www.gstatic.com/firebaseapp/v8_0_0/images/firebase-logo.png" alt="Google" className="w-5 h-5" />
-                        Sign up with Google
-                      </>
-                    )}
                   </Button>
                 </form>
               </CardContent>

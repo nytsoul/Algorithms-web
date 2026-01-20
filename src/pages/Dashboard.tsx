@@ -173,52 +173,101 @@ export default function Dashboard() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
                     >
-                        <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground mb-1">Total Algorithms</p>
-                                    <p className="text-3xl font-bold text-[var(--neon-cyan)]">
-                                        {algorithms?.length || 0}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground mt-2">Across {domainsWithAlgorithms.length} domains</p>
+                        {/* Total Algorithms Card */}
+                        <motion.div
+                            whileHover={{ scale: 1.02, y: -4 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <Card className="relative overflow-hidden border-border/30 bg-gradient-to-br from-[var(--neon-cyan)]/10 via-card/50 to-card/30 backdrop-blur-xl">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--neon-cyan)]/5 rounded-full blur-3xl" />
+                                <div className="relative p-6">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="p-3 rounded-xl bg-[var(--neon-cyan)]/10 border border-[var(--neon-cyan)]/20">
+                                            <Code2 className="w-6 h-6 text-[var(--neon-cyan)]" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-muted-foreground mb-2">Total Algorithms</p>
+                                        <p className="text-4xl font-bold text-[var(--neon-cyan)] mb-1">
+                                            {algorithms?.length || 0}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">Across {domainsWithAlgorithms.length} domains</p>
+                                    </div>
                                 </div>
-                                <Code2 className="w-8 h-8 text-[var(--neon-cyan)]" />
-                            </div>
-                        </Card>
+                            </Card>
+                        </motion.div>
 
-                        <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground mb-1">Domains</p>
-                                    <p className="text-3xl font-bold text-[var(--neon-pink)]">{domainsWithAlgorithms.length}</p>
+                        {/* Domains Card */}
+                        <motion.div
+                            whileHover={{ scale: 1.02, y: -4 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <Card className="relative overflow-hidden border-border/30 bg-gradient-to-br from-[var(--neon-pink)]/10 via-card/50 to-card/30 backdrop-blur-xl">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--neon-pink)]/5 rounded-full blur-3xl" />
+                                <div className="relative p-6">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="p-3 rounded-xl bg-[var(--neon-pink)]/10 border border-[var(--neon-pink)]/20">
+                                            <BookOpen className="w-6 h-6 text-[var(--neon-pink)]" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-muted-foreground mb-2">Domains</p>
+                                        <p className="text-4xl font-bold text-[var(--neon-pink)] mb-1">
+                                            {domainsWithAlgorithms.length}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">CS categories</p>
+                                    </div>
                                 </div>
-                                <BookOpen className="w-8 h-8 text-[var(--neon-pink)]" />
-                            </div>
-                        </Card>
+                            </Card>
+                        </motion.div>
 
-                        <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground mb-1">Filtered Results</p>
-                                    <p className="text-3xl font-bold text-[var(--neon-purple)]">
-                                        {filteredAlgorithms?.length || 0}
-                                    </p>
+                        {/* Filtered Results Card */}
+                        <motion.div
+                            whileHover={{ scale: 1.02, y: -4 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <Card className="relative overflow-hidden border-border/30 bg-gradient-to-br from-[var(--neon-purple)]/10 via-card/50 to-card/30 backdrop-blur-xl">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--neon-purple)]/5 rounded-full blur-3xl" />
+                                <div className="relative p-6">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="p-3 rounded-xl bg-[var(--neon-purple)]/10 border border-[var(--neon-purple)]/20">
+                                            <Filter className="w-6 h-6 text-[var(--neon-purple)]" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-muted-foreground mb-2">Filtered Results</p>
+                                        <p className="text-4xl font-bold text-[var(--neon-purple)] mb-1">
+                                            {filteredAlgorithms?.length || 0}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">Matching criteria</p>
+                                    </div>
                                 </div>
-                                <Filter className="w-8 h-8 text-[var(--neon-purple)]" />
-                            </div>
-                        </Card>
+                            </Card>
+                        </motion.div>
 
-                        <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm text-muted-foreground mb-1">Visualizations</p>
-                                    <p className="text-3xl font-bold text-[var(--neon-green)]">∞</p>
+                        {/* Visualizations Card */}
+                        <motion.div
+                            whileHover={{ scale: 1.02, y: -4 }}
+                            transition={{ type: "spring", stiffness: 300 }}
+                        >
+                            <Card className="relative overflow-hidden border-border/30 bg-gradient-to-br from-[var(--neon-green)]/10 via-card/50 to-card/30 backdrop-blur-xl">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--neon-green)]/5 rounded-full blur-3xl" />
+                                <div className="relative p-6">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="p-3 rounded-xl bg-[var(--neon-green)]/10 border border-[var(--neon-green)]/20">
+                                            <Zap className="w-6 h-6 text-[var(--neon-green)]" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-muted-foreground mb-2">Visualizations</p>
+                                        <p className="text-4xl font-bold text-[var(--neon-green)] mb-1">∞</p>
+                                        <p className="text-xs text-muted-foreground">Interactive demos</p>
+                                    </div>
                                 </div>
-                                <Zap className="w-8 h-8 text-[var(--neon-green)]" />
-                            </div>
-                        </Card>
+                            </Card>
+                        </motion.div>
                     </motion.div>
 
                     {/* Algorithm Grid Organized by Domain */}
@@ -268,8 +317,8 @@ export default function Dashboard() {
                                                             {domainObj.description}
                                                         </p>
                                                         <Link to={`/domain/${domainObj.id}`}>
-                                                            <Button 
-                                                                variant="ghost" 
+                                                            <Button
+                                                                variant="ghost"
                                                                 size="sm"
                                                                 className="mt-3 text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10"
                                                             >
@@ -293,78 +342,78 @@ export default function Dashboard() {
                                                             <Card className="cyber-card p-6 h-full bg-card/50 backdrop-blur-sm border-border/50 hover:border-[var(--neon-cyan)]/50 transition-all group">
                                                                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[var(--neon-cyan)]/5 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform" />
 
-                                                                    <div className="flex items-start justify-between mb-4 relative z-10">
-                                                                        <div className="flex-1">
-                                                                            <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-[var(--neon-cyan)] transition-colors line-clamp-2">
-                                                                                {algo.name}
-                                                                            </h3>
-                                                                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                                                                <Badge
-                                                                                    variant="outline"
-                                                                                    className={`${getDifficultyColor(algo.difficulty)} border text-xs`}
-                                                                                >
-                                                                                    {algo.difficulty}
-                                                                                </Badge>
-                                                                                <Badge variant="outline" className="border-[var(--neon-pink)]/30 text-xs">
-                                                                                    {algo.category}
-                                                                                </Badge>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2 relative z-10">
-                                                                        {algo.description}
-                                                                    </p>
-
-                                                                    <div className="space-y-2 mb-4 text-xs relative z-10">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Clock className="w-3 h-3 text-[var(--neon-cyan)]" />
-                                                                            <span className="text-muted-foreground">
-                                                                                Avg: <span className="text-[var(--neon-cyan)]">{algo.timeComplexity?.average || 'N/A'}</span>
-                                                                            </span>
-                                                                        </div>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <TrendingUp className="w-3 h-3 text-[var(--neon-pink)]" />
-                                                                            <span className="text-muted-foreground">
-                                                                                Space: <span className="text-[var(--neon-pink)]">{algo.spaceComplexity || 'O(n)'}</span>
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="flex flex-wrap gap-1 mb-4 relative z-10">
-                                                                        {(algo.tags && algo.tags.slice(0, 2)).map((tag, i) => (
-                                                                            <Badge key={`${tag}-${i}`} variant="secondary" className="text-xs bg-secondary/30">
-                                                                                {tag}
-                                                                            </Badge>
-                                                                        ))}
-                                                                        {algo.tags && algo.tags.length > 2 && (
-                                                                            <Badge variant="secondary" className="text-xs bg-secondary/30">
-                                                                                +{algo.tags.length - 2}
-                                                                            </Badge>
-                                                                        )}
-                                                                    </div>
-
-                                                                    <div className="flex gap-2 relative z-10">
-                                                                        <Link to={`/algorithm/${algo.slug}`} className="flex-1">
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                className="w-full justify-between text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10"
+                                                                <div className="flex items-start justify-between mb-4 relative z-10">
+                                                                    <div className="flex-1">
+                                                                        <h3 className="text-lg font-bold mb-2 text-foreground group-hover:text-[var(--neon-cyan)] transition-colors line-clamp-2">
+                                                                            {algo.name}
+                                                                        </h3>
+                                                                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                                            <Badge
+                                                                                variant="outline"
+                                                                                className={`${getDifficultyColor(algo.difficulty)} border text-xs`}
                                                                             >
-                                                                                View Details
-                                                                                <ChevronRight className="w-4 h-4" />
-                                                                            </Button>
-                                                                        </Link>
-                                                                        <Link to={`/visualize?algo=${algo.slug}`} className="flex-1">
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                className="w-full justify-between text-[var(--neon-green)] hover:bg-[var(--neon-green)]/10"
-                                                                            >
-                                                                                Visualize
-                                                                                <Zap className="w-4 h-4" />
-                                                                            </Button>
-                                                                        </Link>
+                                                                                {algo.difficulty}
+                                                                            </Badge>
+                                                                            <Badge variant="outline" className="border-[var(--neon-pink)]/30 text-xs">
+                                                                                {algo.category}
+                                                                            </Badge>
+                                                                        </div>
                                                                     </div>
-                                                                </Card>
+                                                                </div>
+
+                                                                <p className="text-sm text-muted-foreground mb-4 line-clamp-2 relative z-10">
+                                                                    {algo.description}
+                                                                </p>
+
+                                                                <div className="space-y-2 mb-4 text-xs relative z-10">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Clock className="w-3 h-3 text-[var(--neon-cyan)]" />
+                                                                        <span className="text-muted-foreground">
+                                                                            Avg: <span className="text-[var(--neon-cyan)]">{algo.timeComplexity?.average || 'N/A'}</span>
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <TrendingUp className="w-3 h-3 text-[var(--neon-pink)]" />
+                                                                        <span className="text-muted-foreground">
+                                                                            Space: <span className="text-[var(--neon-pink)]">{algo.spaceComplexity || 'O(n)'}</span>
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex flex-wrap gap-1 mb-4 relative z-10">
+                                                                    {(algo.tags && algo.tags.slice(0, 2)).map((tag, i) => (
+                                                                        <Badge key={`${tag}-${i}`} variant="secondary" className="text-xs bg-secondary/30">
+                                                                            {tag}
+                                                                        </Badge>
+                                                                    ))}
+                                                                    {algo.tags && algo.tags.length > 2 && (
+                                                                        <Badge variant="secondary" className="text-xs bg-secondary/30">
+                                                                            +{algo.tags.length - 2}
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+
+                                                                <div className="flex gap-2 relative z-10">
+                                                                    <Link to={`/algorithm/${algo.slug}`} className="flex-1">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            className="w-full justify-between text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10"
+                                                                        >
+                                                                            View Details
+                                                                            <ChevronRight className="w-4 h-4" />
+                                                                        </Button>
+                                                                    </Link>
+                                                                    <Link to={`/visualize?algo=${algo.slug}`} className="flex-1">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            className="w-full justify-between text-[var(--neon-green)] hover:bg-[var(--neon-green)]/10"
+                                                                        >
+                                                                            Visualize
+                                                                            <Zap className="w-4 h-4" />
+                                                                        </Button>
+                                                                    </Link>
+                                                                </div>
+                                                            </Card>
                                                         </motion.div>
                                                     ))}
                                                 </div>
