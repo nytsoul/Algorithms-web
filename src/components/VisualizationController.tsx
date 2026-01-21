@@ -126,57 +126,81 @@ export default function VisualizationController({ algorithm }: VisualizationCont
             </Card>
 
             {/* Controls Bar */}
-            <Card className="cyber-card p-4 bg-card/50 backdrop-blur-sm border-border/50">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    {/* Playback Controls */}
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" size="icon" onClick={handleStepBackward} disabled={currentStepIndex === 0}>
-                            <SkipBack className="w-4 h-4" />
-                        </Button>
-                        <Button
-                            variant="default"
-                            size="icon"
-                            onClick={() => setIsPlaying(!isPlaying)}
-                            className="bg-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/80 text-black font-bold h-10 w-10 active:scale-95 transition-all"
+            <Card className="cyber-card p-0 bg-card/50 backdrop-blur-sm border-border/50 overflow-hidden">
+                <div className="flex flex-col">
+                    {/* Progress Bar - Truly Full Width (Edge to Edge) */}
+                    <div className="w-full h-1.5 bg-secondary/10 relative group cursor-pointer">
+                        <div
+                            className="h-full bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-purple)] to-[var(--neon-pink)] transition-all duration-300 ease-out relative"
+                            style={{ width: `${((currentStepIndex + 1) / Math.max(steps.length, 1)) * 100}%` }}
                         >
-                            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-1" />}
-                        </Button>
-                        <Button variant="outline" size="icon" onClick={handleStepForward} disabled={currentStepIndex === steps.length - 1}>
-                            <SkipForward className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={handleReset} className="ml-2 text-muted-foreground hover:text-white">
-                            <RotateCcw className="w-4 h-4" />
-                        </Button>
+                            <div className="absolute top-0 right-0 h-full w-24 bg-gradient-to-r from-transparent to-white/20 blur-sm" />
+                        </div>
+                        <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="flex-1 min-w-[200px] flex flex-col gap-1">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Step {currentStepIndex + 1}</span>
-                            <span>{steps.length} Steps</span>
+                    <div className="p-6 flex flex-col gap-6">
+                        {/* Status Info & Alignment */}
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-muted-foreground font-mono">
+                            <div className="flex items-center gap-3">
+                                <Activity className="w-3.5 h-3.5 text-[var(--neon-cyan)] animate-pulse" />
+                                <span className="text-white/80">Visualization Engine Active</span>
+                            </div>
+                            <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-2">
+                                    <span className="opacity-50">Step:</span>
+                                    <span className="text-[var(--neon-cyan)] font-bold">{currentStepIndex + 1}</span>
+                                    <span className="opacity-30">/</span>
+                                    <span className="text-white">{steps.length}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="opacity-50">Completion:</span>
+                                    <span className="text-[var(--neon-pink)] font-bold">{Math.round(((currentStepIndex + 1) / Math.max(steps.length, 1)) * 100)}%</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="h-2 bg-secondary/30 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-[var(--neon-cyan)] transition-all duration-300 ease-out"
-                                style={{ width: `${((currentStepIndex + 1) / Math.max(steps.length, 1)) * 100}%` }}
-                            />
-                        </div>
-                    </div>
 
-                    {/* Speed Control */}
-                    <div className="flex items-center gap-3 min-w-[150px]">
-                        <Zap className="w-4 h-4 text-[var(--neon-yellow)]" />
-                        <div className="flex-1">
-                            <Slider
-                                value={[speed]}
-                                min={0.5}
-                                max={4}
-                                step={0.5}
-                                onValueChange={(vals) => setSpeed(vals[0])}
-                                className="w-full"
-                            />
+                        <div className="flex flex-wrap items-center justify-between gap-6">
+                            {/* Playback Controls */}
+                            <div className="flex items-center gap-3">
+                                <Button variant="outline" size="icon" onClick={handleStepBackward} disabled={currentStepIndex === 0} className="border-white/10 hover:border-[var(--neon-cyan)]/50 hover:bg-[var(--neon-cyan)]/5 transition-all">
+                                    <SkipBack className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant="default"
+                                    size="icon"
+                                    onClick={() => setIsPlaying(!isPlaying)}
+                                    className="bg-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/80 text-black font-black h-12 w-12 active:scale-90 transition-all shadow-[0_0_25px_rgba(0,243,255,0.4)]"
+                                >
+                                    {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+                                </Button>
+                                <Button variant="outline" size="icon" onClick={handleStepForward} disabled={currentStepIndex === steps.length - 1} className="border-white/10 hover:border-[var(--neon-cyan)]/50 hover:bg-[var(--neon-cyan)]/5 transition-all">
+                                    <SkipForward className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={handleReset} className="ml-2 text-muted-foreground hover:text-[var(--neon-pink)] transition-colors">
+                                    <RotateCcw className="w-4 h-4" />
+                                </Button>
+                            </div>
+
+                            {/* Speed Control */}
+                            <div className="flex items-center gap-5 bg-black/30 px-5 py-2.5 rounded-2xl border border-white/5 min-w-[240px]">
+                                <Zap className="w-4 h-4 text-[var(--neon-yellow)]" />
+                                <div className="flex-1">
+                                    <Slider
+                                        value={[speed]}
+                                        min={0.5}
+                                        max={4}
+                                        step={0.5}
+                                        onValueChange={(vals) => setSpeed(vals[0])}
+                                        className="w-full"
+                                    />
+                                </div>
+                                <div className="flex flex-col items-end min-w-[40px]">
+                                    <span className="text-[10px] font-black text-[var(--neon-yellow)] font-mono leading-none">{speed}x</span>
+                                    <span className="text-[8px] text-white/30 font-bold uppercase mt-1">Speed</span>
+                                </div>
+                            </div>
                         </div>
-                        <span className="text-xs font-mono w-8 text-right">{speed}x</span>
                     </div>
                 </div>
             </Card>

@@ -1,0 +1,451 @@
+# Create an interactive HTML visualization of binary search steps
+import math
+import base64
+from pathlib import Path
+
+html_str = r"""
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <title>Binary Search Visualization</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            margin: 18px;
+            color: #111;
+        }
+
+        .wrap {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            margin: 0 0 8px 0;
+            font-weight: 700;
+        }
+
+        .sub {
+            color: #444;
+            margin: 0 0 14px 0;
+        }
+
+        .panel {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 14px;
+            margin: 12px 0;
+            background: #fff;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        label {
+            font-size: 13px;
+            color: #222;
+        }
+
+        input[type='number'],
+        input[type='text'] {
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input[type='range'] {
+            width: 240px;
+        }
+
+        button {
+            padding: 9px 12px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background: #f7f7f7;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #f0f0f0;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chip {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .arr {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .cell {
+            width: 52px;
+        }
+
+        .box {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 8px 6px;
+            text-align: center;
+            background: #fff;
+        }
+
+        .idx {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .val {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .lo {
+            background: #e8f1ff;
+            border-color: #a8c7ff;
+        }
+
+        .hi {
+            background: #e8f1ff;
+            border-color: #a8c7ff;
+        }
+
+        .mid {
+            background: #ffe9cc;
+            border-color: #ffb56b;
+        }
+
+        .found {
+            background: #dbf8df;
+            border-color: #6fd07e;
+        }
+
+        .out {
+            background: #f5f5f5;
+            color: #888;
+        }
+
+        .log {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre-wrap;
+            background: #0b1020;
+            color: #dfe6ff;
+            padding: 12px;
+            border-radius: 10px;
+            overflow: auto;
+        }
+
+        .hint {
+            color: #555;
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.35;
+        }
+
+        .k {
+            color: #8be9fd;
+        }
+
+        .v {
+            color: #f1fa8c;
+        }
+
+        .n {
+            color: #bd93f9;
+        }
+
+        .g {
+            color: #50fa7b;
+        }
+
+        .r {
+            color: #ff5555;
+        }
+    </style>
+</head>
+
+<body>
+    <div class='wrap'>
+        <h2>Binary search visualization</h2>
+        <div class='sub'>Step through binary search on a sorted array. Use <span class='chip'>Next</span> to advance, or
+            drag the <span class='chip'>Step</span> slider.</div>
+
+        <div class='panel'>
+            <div class='row'>
+                <div>
+                    <label>Array size</label><br />
+                    <input id='n' type='number' min='5' max='40' value='21' />
+                </div>
+                <div>
+                    <label>Array type</label><br />
+                    <select id='arrType'
+                        style='padding:8px 10px; border:1px solid #ccc; border-radius:8px; font-size:14px;'>
+                        <option value='even'>Evenly spaced (0, 2, 4, ...)</option>
+                        <option value='random'>Strictly increasing random</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Target</label><br />
+                    <input id='target' type='number' value='18' />
+                </div>
+                <div style='padding-top:18px'>
+                    <button id='resetBtn'>Reset</button>
+                </div>
+            </div>
+
+            <div class='row' style='margin-top:12px'>
+                <div>
+                    <button id='prevBtn'>Prev</button>
+                    <button id='nextBtn'>Next</button>
+                    <button id='playBtn'>Play</button>
+                </div>
+                <div>
+                    <label>Step</label>
+                    <input id='step' type='range' min='0' max='0' value='0' />
+                    <span class='chip' id='stepLabel'>0 / 0</span>
+                </div>
+                <div>
+                    <span class='chip'>lo: <span id='loLbl'>-</span></span>
+                    <span class='chip'>mid: <span id='midLbl'>-</span></span>
+                    <span class='chip'>hi: <span id='hiLbl'>-</span></span>
+                    <span class='chip'>comparisons: <span id='cmpLbl'>0</span></span>
+                </div>
+            </div>
+
+            <div class='arr' id='arrView'></div>
+            <div class='hint' id='status'></div>
+        </div>
+
+        <div class='panel'>
+            <div style='font-weight:700; margin-bottom:8px;'>Step log</div>
+            <div class='log' id='log'></div>
+        </div>
+    </div>
+
+    <script>
+        function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+        function makeArray(n, type) {
+            if (type === 'even') {
+                const arr = [];
+                for (let i = 0; i < n; i++) arr.push(i * 2);
+                return arr;
+            }
+            // strictly increasing random
+            const arr = [randInt(0, 5)];
+            for (let i = 1; i < n; i++) arr.push(arr[i - 1] + randInt(1, 6));
+            return arr;
+        }
+
+        function runBinarySearchSteps(arr, target) {
+            let lo = 0, hi = arr.length - 1;
+            const steps = [];
+            let cmp = 0;
+            while (lo <= hi) {
+                const mid = Math.floor((lo + hi) / 2);
+                cmp += 1;
+                const midVal = arr[mid];
+                let action = '';
+                if (midVal === target) {
+                    action = 'FOUND';
+                    steps.push({ lo, mid, hi, cmp, action, midVal });
+                    return { steps, foundIndex: mid };
+                } else if (midVal < target) {
+                    action = 'midVal < target, move lo = mid + 1';
+                    steps.push({ lo, mid, hi, cmp, action, midVal });
+                    lo = mid + 1;
+                } else {
+                    action = 'midVal > target, move hi = mid - 1';
+                    steps.push({ lo, mid, hi, cmp, action, midVal });
+                    hi = mid - 1;
+                }
+            }
+            // final state when not found
+            steps.push({ lo, mid: null, hi, cmp, action: 'NOT FOUND (lo crossed hi)', midVal: null });
+            return { steps, foundIndex: -1 };
+        }
+
+        const elN = document.getElementById('n');
+        const elType = document.getElementById('arrType');
+        const elTarget = document.getElementById('target');
+        const elReset = document.getElementById('resetBtn');
+        const elPrev = document.getElementById('prevBtn');
+        const elNext = document.getElementById('nextBtn');
+        const elPlay = document.getElementById('playBtn');
+        const elStep = document.getElementById('step');
+        const elStepLabel = document.getElementById('stepLabel');
+        const elArrView = document.getElementById('arrView');
+        const elLog = document.getElementById('log');
+        const elStatus = document.getElementById('status');
+        const loLbl = document.getElementById('loLbl');
+        const midLbl = document.getElementById('midLbl');
+        const hiLbl = document.getElementById('hiLbl');
+        const cmpLbl = document.getElementById('cmpLbl');
+
+        let state = { arr: [], target: 0, steps: [], foundIndex: -1, stepIdx: 0, timer: null };
+
+        function render() {
+            const maxStep = Math.max(0, state.steps.length - 1);
+            elStep.max = String(maxStep);
+            if (state.stepIdx > maxStep) state.stepIdx = maxStep;
+            elStep.value = String(state.stepIdx);
+            elStepLabel.textContent = String(state.stepIdx) + ' / ' + String(maxStep);
+
+            const st = state.steps[state.stepIdx] || null;
+            const lo = st ? st.lo : null;
+            const hi = st ? st.hi : null;
+            const mid = st ? st.mid : null;
+
+            loLbl.textContent = (lo === null || lo === undefined) ? '-' : String(lo);
+            hiLbl.textContent = (hi === null || hi === undefined) ? '-' : String(hi);
+            midLbl.textContent = (mid === null || mid === undefined) ? '-' : String(mid);
+            cmpLbl.textContent = st ? String(st.cmp) : '0';
+
+            elArrView.innerHTML = '';
+            for (let i = 0; i < state.arr.length; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                const box = document.createElement('div');
+                box.className = 'box';
+
+                if (st) {
+                    const inRange = (i >= st.lo && i <= st.hi);
+                    if (!inRange) box.classList.add('out');
+                    if (i === st.lo) box.classList.add('lo');
+                    if (i === st.hi) box.classList.add('hi');
+                    if (st.mid !== null && i === st.mid) box.classList.add('mid');
+                    if (state.foundIndex >= 0 && i === state.foundIndex && st.action === 'FOUND') box.classList.add('found');
+                }
+
+                const idx = document.createElement('div');
+                idx.className = 'idx';
+                idx.textContent = 'i=' + String(i);
+                const val = document.createElement('div');
+                val.className = 'val';
+                val.textContent = String(state.arr[i]);
+                box.appendChild(idx);
+                box.appendChild(val);
+                cell.appendChild(box);
+                elArrView.appendChild(cell);
+            }
+
+            const lines = [];
+            for (let i = 0; i < state.steps.length; i++) {
+                const s = state.steps[i];
+                const isHere = (i === state.stepIdx);
+                const head = (isHere ? '➤ ' : '  ') + 'step ' + String(i) + ': ';
+                if (s.action === 'FOUND') {
+                    lines.push(head + 'lo=' + s.lo + ', hi=' + s.hi + ', mid=' + s.mid + ', arr[mid]=' + s.midVal + ' => FOUND');
+                } else if (s.action.startsWith('NOT FOUND')) {
+                    lines.push(head + 'lo=' + s.lo + ', hi=' + s.hi + ' => NOT FOUND');
+                } else {
+                    lines.push(head + 'lo=' + s.lo + ', hi=' + s.hi + ', mid=' + s.mid + ', arr[mid]=' + s.midVal + ' => ' + s.action);
+                }
+            }
+            elLog.textContent = lines.join('\
+');
+
+            if (!st) {
+                elStatus.textContent = 'Set parameters and hit Reset to generate steps.';
+            } else {
+                if (st.action === 'FOUND') {
+                    elStatus.innerHTML = "Target <b>" + String(state.target) + "</b> found at index <b>" + String(state.foundIndex) + "</b>.";
+                } else if (st.action.startsWith('NOT FOUND')) {
+                    elStatus.innerHTML = "Target <b>" + String(state.target) + "</b> is not in the array.";
+                } else {
+                    elStatus.innerHTML = "Comparing target <b>" + String(state.target) + "</b> vs arr[mid] <b>" + String(st.midVal) + "</b>.";
+                }
+            }
+
+            elPrev.disabled = (state.stepIdx <= 0);
+            elNext.disabled = (state.stepIdx >= maxStep);
+        }
+
+        function reset() {
+            const n = Math.max(5, Math.min(40, Number(elN.value || 21)));
+            elN.value = String(n);
+            const type = elType.value;
+            state.arr = makeArray(n, type);
+
+            let t = Number(elTarget.value);
+            if (Number.isNaN(t)) t = state.arr[Math.floor(state.arr.length / 2)];
+            state.target = t;
+            elTarget.value = String(t);
+
+            const out = runBinarySearchSteps(state.arr, state.target);
+            state.steps = out.steps;
+            state.foundIndex = out.foundIndex;
+            state.stepIdx = 0;
+
+            stopPlay();
+            render();
+        }
+
+        function stopPlay() {
+            if (state.timer) {
+                clearInterval(state.timer);
+                state.timer = null;
+                elPlay.textContent = 'Play';
+            }
+        }
+
+        function togglePlay() {
+            const maxStep = Math.max(0, state.steps.length - 1);
+            if (!state.timer) {
+                elPlay.textContent = 'Pause';
+                state.timer = setInterval(() => {
+                    if (state.stepIdx >= maxStep) {
+                        stopPlay();
+                        return;
+                    }
+                    state.stepIdx += 1;
+                    render();
+                }, 700);
+            } else {
+                stopPlay();
+            }
+        }
+
+        elReset.addEventListener('click', reset);
+        elPrev.addEventListener('click', () => { stopPlay(); state.stepIdx = Math.max(0, state.stepIdx - 1); render(); });
+        elNext.addEventListener('click', () => { stopPlay(); state.stepIdx = Math.min(state.steps.length - 1, state.stepIdx + 1); render(); });
+        elPlay.addEventListener('click', () => { togglePlay(); });
+        elStep.addEventListener('input', () => { stopPlay(); state.stepIdx = Number(elStep.value); render(); });
+
+        // init
+        reset();
+    </script>
+</body>
+
+</html>
+"""
+
+out_path = Path('binary_search_visualization.html')
+out_path.write_text(html_str, encoding='utf-8')
+
+from IPython.display import HTML, display
+
+display(HTML(html_str))
+print(str(out_path))

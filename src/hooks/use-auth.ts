@@ -78,44 +78,33 @@ export function useAuth() {
     try {
       if (!user.email || !user.id) return;
 
-      console.log("[Auth] Saving Google user profile:", user.email);
+      console.log("[Auth] Syncing Google user profile:", user.email);
 
       const fullName = user.user_metadata?.full_name || user.email.split("@")[0];
       const avatar = user.user_metadata?.avatar_url;
 
-      // Check if user already exists
-      const { data: existing } = await supabase
-        .from("user_profiles")
-        .select("id")
-        .eq("email", user.email)
-        .single();
-
-      if (existing) {
-        console.log("[Auth] User profile already exists");
-        return;
-      }
-
-      // Create new profile with Google data
+      // Create or Update profile with Google data
       const { error } = await supabase
         .from("user_profiles")
-        .insert([
+        .upsert(
           {
             id: user.id,
             email: user.email,
             password_hash: "google-oauth", // Mark as OAuth user
             full_name: fullName,
-            date_of_birth: null, // Google doesn't provide DOB
-            avatar_url: avatar
-          }
-        ]);
+            avatar_url: avatar,
+            updated_at: new Date().toISOString()
+          },
+          { onConflict: 'id' }
+        );
 
       if (error) {
-        console.error("[Auth] Failed to save Google profile:", error);
+        console.error("[Auth] Failed to sync Google profile:", error);
       } else {
-        console.log("[Auth] ✅ Google user profile saved!");
+        console.log("[Auth] ✅ Google user profile synchronized!");
       }
     } catch (err) {
-      console.error("[Auth] Error saving Google profile:", err);
+      console.error("[Auth] Error syncing Google profile:", err);
     }
   };
 

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Binary Tree Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        input {
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            width: 100px;
+            text-align: center;
+        }
+
+        #tree-container {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+
+        .node circle {
+            fill: #667eea;
+            stroke: #764ba2;
+            stroke-width: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node circle:hover {
+            fill: #764ba2;
+            stroke: #667eea;
+            r: 25;
+        }
+
+        .node text {
+            font-size: 14px;
+            font-weight: bold;
+            fill: white;
+            pointer-events: none;
+        }
+
+        .link {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2px;
+        }
+
+        .info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🌳 Interactive Binary Tree Visualization</h1>
+
+        <div class="controls">
+            <input type="number" id="nodeValue" placeholder="Value" min="1" max="100">
+            <button onclick="insertNode()">Insert Node</button>
+            <button onclick="deleteNode()">Delete Node</button>
+            <button onclick="searchNode()">Search Node</button>
+            <button onclick="clearTree()">Clear Tree</button>
+            <button onclick="generateRandomTree()">Random Tree</button>
+        </div>
+
+        <div id="tree-container"></div>
+
+        <div class="info">
+            <p>Click on nodes to select them | Use controls to insert, delete, or search values</p>
+        </div>
+    </div>
+
+    <script>
+        // Binary Tree Node Class
+        class TreeNode {
+            constructor(value) {
+                this.value = value;
+                this.left = null;
+                this.right = null;
+            }
+        }
+
+        // Binary Search Tree Class
+        class BinarySearchTree {
+            constructor() {
+                this.root = null;
+            }
+
+            insert(value) {
+                const newNode = new TreeNode(value);
+                if (!this.root) {
+                    this.root = newNode;
+                    return;
+                }
+
+                let current = this.root;
+                while (true) {
+                    if (value < current.value) {
+                        if (!current.left) {
+                            current.left = newNode;
+                            return;
+                        }
+                        current = current.left;
+                    } else {
+                        if (!current.right) {
+                            current.right = newNode;
+                            return;
+                        }
+                        current = current.right;
+                    }
+                }
+            }
+
+            search(value) {
+                let current = this.root;
+                while (current) {
+                    if (value === current.value) return true;
+                    current = value < current.value ? current.left : current.right;
+                }
+                return false;
+            }
+
+            delete(value) {
+                this.root = this.deleteNode(this.root, value);
+            }
+
+            deleteNode(node, value) {
+                if (!node) return null;
+
+                if (value < node.value) {
+                    node.left = this.deleteNode(node.left, value);
+                } else if (value > node.value) {
+                    node.right = this.deleteNode(node.right, value);
+                } else {
+                    if (!node.left) return node.right;
+                    if (!node.right) return node.left;
+
+                    let minRight = node.right;
+                    while (minRight.left) minRight = minRight.left;
+                    node.value = minRight.value;
+                    node.right = this.deleteNode(node.right, minRight.value);
+                }
+                return node;
+            }
+
+            toD3Format() {
+                if (!this.root) return null;
+
+                const convert = (node) => {
+                    if (!node) return null;
+                    return {
+                        name: node.value.toString(),
+                        children: [convert(node.left), convert(node.right)].filter(Boolean)
+                    };
+                };
+
+                return convert(this.root);
+            }
+        }
+
+        // Initialize BST and D3 visualization
+        let bst = new BinarySearchTree();
+        let selectedNode = null;
+
+        // D3 Visualization Setup
+        const width = 1140;
+        const height = 600;
+
+        const svg = d3.select("#tree-container")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(40,40)");
+
+        const tree = d3.tree().size([width - 80, height - 80]);
+
+        function updateVisualization() {
+            svg.selectAll("*").remove();
+
+            const treeData = bst.toD3Format();
+            if (!treeData) return;
+
+            const root = d3.hierarchy(treeData);
+            const treeLayout = tree(root);
+
+            // Links
+            svg.selectAll(".link")
+                .data(treeLayout.links())
+                .enter()
+                .append("path")
+                .attr("class", "link")
+                .attr("d", d3.linkVertical()
+                    .x(d => d.x)
+                    .y(d => d.y));
+
+            // Nodes
+            const nodes = svg.selectAll(".node")
+                .data(treeLayout.descendants())
+                .enter()
+                .append("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+
+            nodes.append("circle")
+                .attr("r", 20)
+                .on("click", function (event, d) {
+                    selectedNode = parseInt(d.data.name);
+                    document.getElementById("nodeValue").value = selectedNode;
+                    d3.selectAll("circle").attr("fill", "#667eea");
+                    d3.select(this).attr("fill", "#ff6b6b");
+                });
+
+            nodes.append("text")
+                .attr("dy", 5)
+                .attr("text-anchor", "middle")
+                .text(d => d.data.name);
+        }
+
+        // Control Functions
+        function insertNode() {
+            const value = parseInt(document.getElementById("nodeValue").value);
+            if (isNaN(value)) {
+                alert("Please enter a valid number");
+                return;
+            }
+            bst.insert(value);
+            updateVisualization();
+            document.getElementById("nodeValue").value = "";
+        }
+
+        function deleteNode() {
+            const value = parseInt(document.getElementById("nodeValue").value);
+            if (isNaN(value)) {
+                alert("Please enter a valid number");
+                return;
+            }
+            bst.delete(value);
+            updateVisualization();
+            document.getElementById("nodeValue").value = "";
+        }
+
+        function searchNode() {
+            const value = parseInt(document.getElementById("nodeValue").value);
+            if (isNaN(value)) {
+                alert("Please enter a valid number");
+                return;
+            }
+            const found = bst.search(value);
+            alert(found ? `Value ${value} found in tree!` : `Value ${value} not found in tree.`);
+        }
+
+        function clearTree() {
+            bst = new BinarySearchTree();
+            updateVisualization();
+        }
+
+        function generateRandomTree() {
+            bst = new BinarySearchTree();
+            const values = [];
+            for (let i = 0; i < 10; i++) {
+                const val = Math.floor(Math.random() * 100) + 1;
+                if (!values.includes(val)) {
+                    values.push(val);
+                    bst.insert(val);
+                }
+            }
+            updateVisualization();
+        }
+
+        // Initialize with a sample tree
+        [50, 30, 70, 20, 40, 60, 80].forEach(val => bst.insert(val));
+        updateVisualization();
+    </script>
+</body>
+
+</html>

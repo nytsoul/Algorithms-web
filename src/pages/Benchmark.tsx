@@ -9,7 +9,9 @@ import { useAlgorithms } from "@/hooks/use-algorithms";
 import { useAuth } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { BenchmarkRunner, BenchmarkResult } from "@/lib/benchmark-runner";
+import { AlgorithmType } from "@/components/visualizations/AlgorithmVisualizer";
 
 export default function Benchmark() {
   const navigate = useNavigate();
@@ -36,6 +38,11 @@ export default function Benchmark() {
   const [liveUpdateSpeed, setLiveUpdateSpeed] = useState("2000");
   const [updateCount, setUpdateCount] = useState(0);
   const [metrics, setMetrics] = useState({ avgTime: 0, avgMemory: 0, avgCpu: 0, avgScalability: 0 });
+
+  // Real Benchmark State
+  const [isRunningRealBenchmark, setIsRunningRealBenchmark] = useState(false);
+  const [realResults, setRealResults] = useState<BenchmarkResult[]>([]);
+  const [activeBenchmarkAlgo, setActiveBenchmarkAlgo] = useState<string | null>(null);
 
   // Generate benchmark data for all algorithms
   const benchmarkData = useMemo(() => {
@@ -83,8 +90,8 @@ export default function Benchmark() {
     });
   }, [benchmarkData, selectedCategory, selectedDomain]);
 
-  const categories = ["all", ...new Set(benchmarkData.map(a => a.category))];
-  const domains = ["all", ...new Set(benchmarkData.map(a => a.domain))];
+  const categories = ["all", ...new Set(benchmarkData.map(a => a.category).filter(Boolean) as string[])];
+  const domains = ["all", ...new Set(benchmarkData.map(a => a.domain).filter(Boolean) as string[])];
 
   // Calculate aggregate stats
   const stats = useMemo(() => {
@@ -146,6 +153,24 @@ export default function Benchmark() {
 
     return () => clearInterval(interval);
   }, [isLiveUpdating, liveUpdateSpeed]);
+
+  const runRealBenchmark = useCallback(async (algoSlug: string) => {
+    setIsRunningRealBenchmark(true);
+    setActiveBenchmarkAlgo(algoSlug);
+    try {
+      // Run benchmark for the selected algorithm across different sizes
+      const results = await BenchmarkRunner.runSuite(
+        algoSlug as AlgorithmType,
+        { sizes: [100, 500, 1000], iterations: 2 }
+      );
+      setRealResults(prev => [...prev.filter(r => r.algorithmId !== algoSlug), ...results]);
+    } catch (err) {
+      console.error("Real benchmark failed:", err);
+    } finally {
+      setIsRunningRealBenchmark(false);
+      setActiveBenchmarkAlgo(null);
+    }
+  }, []);
 
   if (isLoading || allAlgorithms.length === 0) {
     return (
@@ -288,6 +313,17 @@ export default function Benchmark() {
               </div>
             </div>
           </Card>
+
+          {/* Real Benchmark Active Overlay */}
+          {isRunningRealBenchmark && (
+            <Card className="cyber-card p-6 bg-[var(--neon-cyan)]/10 backdrop-blur-md border-[var(--neon-cyan)]/30 mb-8 flex items-center justify-center gap-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--neon-cyan)] border-t-transparent" />
+              <div>
+                <p className="font-bold text-[var(--neon-cyan)] tracking-widest uppercase italic">Running Real-Time Engine Stress Test...</p>
+                <p className="text-xs text-white/60">Benchmarking <span className="text-white font-mono">{activeBenchmarkAlgo}</span> at multiple data scales</p>
+              </div>
+            </Card>
+          )}
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -442,15 +478,30 @@ export default function Benchmark() {
                 <tbody>
                   {filteredData.slice(0, 20).map((algo, idx) => (
                     <tr key={idx} className="border-b border-border/20 hover:bg-background/50 transition">
-                      <td className="py-3 px-4 font-mono text-foreground">{algo.name}</td>
+                      <td className="py-3 px-4 font-mono text-foreground">
+                        <div className="flex items-center gap-2">
+                          {algo.name}
+                          {realResults.some(r => r.algorithmId === algo.slug) && (
+                            <span className="text-[10px] bg-[var(--neon-green)]/20 text-[var(--neon-green)] px-1 rounded border border-[var(--neon-green)]/30">REAL DATA</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-3 px-4 text-muted-foreground">{algo.category}</td>
-                      <td className="py-3 px-4 text-right font-mono text-[var(--neon-purple)]">{algo.executionTime}</td>
-                      <td className="py-3 px-4 text-right font-mono text-[var(--neon-green)]">{algo.memoryUsage}</td>
+                      <td className="py-3 px-4 text-right font-mono text-[var(--neon-purple)]">
+                        {realResults.find(r => r.algorithmId === algo.slug && r.size.toString() === benchmarkSize)?.executionTime.toFixed(2) || algo.executionTime}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono text-[var(--neon-green)]">
+                        {realResults.find(r => r.algorithmId === algo.slug && r.size.toString() === benchmarkSize)?.memoryUsage.toFixed(2) || algo.memoryUsage}
+                      </td>
                       <td className="py-3 px-4 text-right font-mono text-[var(--neon-yellow)]">{algo.cpuLoad}</td>
                       <td className="py-3 px-4 text-right">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${algo.scalability > 75 ? "bg-[var(--neon-green)]/20 text-[var(--neon-green)]" : algo.scalability > 50 ? "bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)]" : "bg-[var(--neon-pink)]/20 text-[var(--neon-pink)]"}`}>
-                          {algo.scalability}%
-                        </span>
+                        <button
+                          onClick={() => runRealBenchmark(algo.slug)}
+                          disabled={isRunningRealBenchmark}
+                          className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] hover:bg-white/10 transition disabled:opacity-50"
+                        >
+                          RUN TEST
+                        </button>
                       </td>
                     </tr>
                   ))}

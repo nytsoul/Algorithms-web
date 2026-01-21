@@ -12,7 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import AICodeGenerator from "@/components/AICodeGenerator";
-import VisualizationController from "@/components/VisualizationController";
+import { AlgorithmVisualizer, AlgorithmType } from "@/components/visualizations/AlgorithmVisualizer";
 import OnlineCompiler from "@/components/OnlineCompiler";
 import Flashcard, { FlashcardGrid } from "@/components/Flashcard";
 import { Header } from "@/components/Header";
@@ -31,6 +31,10 @@ export default function AlgorithmDetail() {
   const [selectedProblem, setSelectedProblem] = useState<any>(null);
   const [isShared, setIsShared] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+
+  // Visualizer data state
+  const [visualizerArray, setVisualizerArray] = useState<number[]>([64, 34, 25, 12, 22, 11, 90, 45, 78, 33]);
+  const [visualizerTarget, setVisualizerTarget] = useState<number>(22);
 
   if (!isAuthenticated) {
     navigate("/auth", { replace: true });
@@ -277,7 +281,70 @@ export default function AlgorithmDetail() {
                       Interactive Visualization
                     </h2>
                   </div>
-                  <VisualizationController algorithm={algorithm} />
+
+                  <div className="bg-black/20 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-2xl">
+                    <AlgorithmVisualizer
+                      type={algorithm.slug as AlgorithmType}
+                      array={visualizerArray}
+                      target={visualizerTarget}
+                      hideHeader={true}
+                    />
+
+                    {/* Data Controls */}
+                    {(algorithm.category === 'Searching' || algorithm.category === 'Sorting') && (
+                      <div className="mt-8 pt-6 border-t border-white/5 flex flex-wrap items-end gap-6">
+                        <div className="flex-1 min-w-[300px]">
+                          <label className="text-[var(--neon-cyan)] text-xs font-bold uppercase tracking-widest mb-3 block">
+                            Input Array
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            {visualizerArray.map((val, idx) => (
+                              <input
+                                key={idx}
+                                type="number"
+                                value={val}
+                                onChange={(e) => {
+                                  const newArray = [...visualizerArray];
+                                  newArray[idx] = parseInt(e.target.value) || 0;
+                                  setVisualizerArray(newArray);
+                                }}
+                                className="w-14 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-center font-mono text-sm focus:border-[var(--neon-cyan)] focus:outline-none transition-colors"
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        {algorithm.category === 'Searching' && (
+                          <div className="w-32">
+                            <label className="text-[var(--neon-purple)] text-xs font-bold uppercase tracking-widest mb-3 block">
+                              Target
+                            </label>
+                            <input
+                              type="number"
+                              value={visualizerTarget}
+                              onChange={(e) => setVisualizerTarget(parseInt(e.target.value) || 0)}
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-1.5 text-white font-mono focus:border-[var(--neon-purple)] focus:outline-none transition-colors"
+                            />
+                          </div>
+                        )}
+
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const newArray = Array.from({ length: 10 }, () => Math.floor(Math.random() * 90) + 10);
+                            setVisualizerArray(newArray);
+                            if (algorithm.category === 'Searching') {
+                              setVisualizerTarget(newArray[Math.floor(Math.random() * newArray.length)]);
+                            }
+                          }}
+                          className="border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10"
+                        >
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Randomize
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </TabsContent>
 

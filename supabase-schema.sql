@@ -15,6 +15,33 @@ CREATE TABLE IF NOT EXISTS domains (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- User Profiles table (stores user account information)
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id UUID PRIMARY KEY, -- Links to Supabase Auth user.id
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash TEXT, -- For email/password auth, "google-oauth" for OAuth users
+    full_name VARCHAR(255),
+    date_of_birth DATE,
+    bio TEXT,
+    avatar_url TEXT,
+    social_links JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- User Settings table (stores user preferences)
+CREATE TABLE IF NOT EXISTS user_settings (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    theme VARCHAR(20) DEFAULT 'dark',
+    language VARCHAR(10) DEFAULT 'en',
+    notifications_enabled BOOLEAN DEFAULT true,
+    email_digest_enabled BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+
 -- Algorithms table (main table for all algorithms)
 CREATE TABLE IF NOT EXISTS algorithms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -72,6 +99,11 @@ CREATE INDEX IF NOT EXISTS idx_algorithms_tags ON algorithms USING GIN(tags);
 CREATE INDEX IF NOT EXISTS idx_algorithms_name_search ON algorithms USING GIN(to_tsvector('english', name));
 CREATE INDEX IF NOT EXISTS idx_algorithms_description_search ON algorithms USING GIN(to_tsvector('english', description));
 
+-- Indexes for user tables
+CREATE INDEX IF NOT EXISTS idx_user_profiles_email ON user_profiles(email);
+CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
+
+
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -87,6 +119,13 @@ CREATE TRIGGER update_algorithms_updated_at BEFORE UPDATE ON algorithms
 
 CREATE TRIGGER update_domains_updated_at BEFORE UPDATE ON domains
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON user_profiles
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_settings_updated_at BEFORE UPDATE ON user_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 
 -- Insert domains
 INSERT INTO domains (id, name, description, icon, color) VALUES
@@ -110,6 +149,8 @@ ON CONFLICT (id) DO UPDATE SET
 -- Enable Row Level Security (optional, adjust based on your needs)
 ALTER TABLE algorithms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE domains ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 
 -- Policy to allow all reads (adjust based on your authentication needs)
 CREATE POLICY "Allow public read access to algorithms" ON algorithms
@@ -118,3 +159,22 @@ CREATE POLICY "Allow public read access to algorithms" ON algorithms
 CREATE POLICY "Allow public read access to domains" ON domains
     FOR SELECT USING (true);
 
+-- User profiles policies
+CREATE POLICY "Users can view their own profile" ON user_profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" ON user_profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Allow public signup" ON user_profiles
+    FOR INSERT WITH CHECK (true);
+
+-- User settings policies
+CREATE POLICY "Users can view their own settings" ON user_settings
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own settings" ON user_settings
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own settings" ON user_settings
+    FOR INSERT WITH CHECK (auth.uid() = user_id);

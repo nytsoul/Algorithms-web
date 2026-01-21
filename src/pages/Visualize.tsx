@@ -1,60 +1,208 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useSearchParams, useNavigate } from "react-router";
+import { useSearchParams, useNavigate } from "react-router";
 import {
-  Code2,
-  ChevronRight,
-  Layers,
-  Box,
-  RotateCcw,
-  WifiOff,
-  Menu,
-  X,
-  Zap,
-  Clock,
-  Activity,
-  BookOpen,
-  Share2,
-  Download,
-  TrendingUp,
+    ChevronRight,
+    Layers,
+    Box,
+    RotateCcw,
+    Zap,
+    Clock,
+    Activity,
+    BookOpen,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import VisualizationPlayer from "@/components/VisualizationPlayer";
+import { AlgorithmVisualizer, AlgorithmType } from "@/components/visualizations/AlgorithmVisualizer";
 import { useAlgorithmBySlug, useAlgorithms } from "@/hooks/use-algorithms";
 import { DOMAINS } from "@/lib/algorithms-data";
-import { isSupabaseConfigured, isSupabaseAvailable } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
+    LineChart,
+    Line,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
 } from "recharts";
+import { Settings2, Plus, Minus, Wand2, Hash } from "lucide-react";
+
+interface ConfigurationPanelProps {
+    algorithm: any;
+    visualizerArray: number[];
+    setVisualizerArray: (arr: number[]) => void;
+    visualizerTarget: number;
+    setVisualizerTarget: (val: number) => void;
+}
+
+function ConfigurationPanel({
+    algorithm,
+    visualizerArray,
+    setVisualizerArray,
+    visualizerTarget,
+    setVisualizerTarget
+}: ConfigurationPanelProps) {
+    const isSearching = algorithm.category === 'Searching';
+    const isSorting = algorithm.category === 'Sorting';
+
+    if (!isSearching && !isSorting) return null;
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="group/panel bg-[#0a0a0c]/80 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 shadow-2xl space-y-8 relative overflow-hidden"
+        >
+            {/* Animated Background Glow */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[var(--neon-cyan)]/5 rounded-full blur-3xl group-hover/panel:bg-[var(--neon-cyan)]/10 transition-colors duration-1000" />
+
+            <div className="flex items-center gap-3 border-b border-white/5 pb-4 relative z-10">
+                <motion.div
+                    whileHover={{ rotate: 90 }}
+                    transition={{ type: "spring", stiffness: 200 }}
+                    className="p-2 bg-[var(--neon-cyan)]/10 rounded-lg"
+                >
+                    <Settings2 className="w-5 h-5 text-[var(--neon-cyan)]" />
+                </motion.div>
+                <div>
+                    <h3 className="text-lg font-bold">Configuration</h3>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Parameters</p>
+                </div>
+            </div>
+
+            {/* Array Controls */}
+            <div className="space-y-4 relative z-10">
+                <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest">Input Dataset</label>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            disabled={visualizerArray.length <= 3}
+                            onClick={() => setVisualizerArray(visualizerArray.slice(0, -1))}
+                            className="w-8 h-8 rounded-lg border-white/5 hover:border-red-500/50 hover:bg-red-500/10 transition-all"
+                        >
+                            <Minus className="w-3 h-3 text-red-400" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            disabled={visualizerArray.length >= 15}
+                            onClick={() => setVisualizerArray([...visualizerArray, Math.floor(Math.random() * 90) + 10])}
+                            className="w-8 h-8 rounded-lg border-white/5 hover:border-[var(--neon-green)]/50 hover:bg-[var(--neon-green)]/10 transition-all"
+                        >
+                            <Plus className="w-3 h-3 text-[var(--neon-green)]" />
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-5 gap-2">
+                    <AnimatePresence>
+                        {visualizerArray.map((val, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.8, opacity: 0 }}
+                                className="relative group/input"
+                            >
+                                <input
+                                    type="number"
+                                    value={val}
+                                    onChange={(e) => {
+                                        const newArray = [...visualizerArray];
+                                        newArray[idx] = parseInt(e.target.value) || 0;
+                                        setVisualizerArray(newArray);
+                                    }}
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-1 py-3 text-white text-center font-mono text-sm focus:bg-white/10 focus:border-[var(--neon-cyan)]/50 focus:outline-none transition-all"
+                                />
+                                <div className="absolute inset-0 rounded-lg border border-[var(--neon-cyan)] opacity-0 group-focus-within/input:opacity-50 blur-[2px] transition-opacity pointer-events-none" />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                </div>
+            </div>
+
+            {/* Target Control */}
+            {isSearching && (
+                <div className="space-y-4 pt-6 border-t border-white/5 relative z-10">
+                    <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest block">Search Target</label>
+                    <div className="relative group/target">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--neon-purple)]/50 to-transparent rounded-xl opacity-0 group-focus-within/target:opacity-100 blur transition-opacity" />
+                        <div className="relative">
+                            <input
+                                type="number"
+                                value={visualizerTarget}
+                                onChange={(e) => setVisualizerTarget(parseInt(e.target.value) || 0)}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-12 py-4 text-white font-mono text-xl focus:border-[var(--neon-purple)] focus:outline-none transition-all"
+                            />
+                            <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--neon-purple)] opacity-50" />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Actions */}
+            <div className="pt-6 relative z-10">
+                <Button
+                    variant="outline"
+                    onClick={() => {
+                        const newArray = Array.from({ length: visualizerArray.length }, () => Math.floor(Math.random() * 90) + 10);
+                        setVisualizerArray(newArray);
+                        if (isSearching) {
+                            setVisualizerTarget(newArray[Math.floor(Math.random() * newArray.length)]);
+                        }
+                    }}
+                    className="w-full h-14 rounded-xl border-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10 hover:border-[var(--neon-cyan)]/60 transition-all font-black italic tracking-tighter text-lg group/btn"
+                >
+                    <Wand2 className="w-5 h-5 mr-3 group-hover/btn:rotate-12 group-hover/btn:scale-125 transition-transform" />
+                    REGENERATE
+                </Button>
+            </div>
+
+            {/* Matrix Decorative bits */}
+            <div className="absolute bottom-2 right-2 flex gap-1 opacity-20">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className={`w-1 h-1 rounded-full ${i === 1 ? 'bg-[var(--neon-cyan)]' : 'bg-white'}`} />
+                ))}
+            </div>
+            {/* Tips/Info */}
+            <div className="bg-[var(--neon-cyan)]/5 border border-[var(--neon-cyan)]/10 rounded-xl p-4 mt-6">
+                <p className="text-[10px] text-[var(--neon-cyan)] font-mono leading-relaxed opacity-60">
+                    // SYSTEM NOTE:<br />
+                    Adjust the array size or direct values to see how the algorithm behaves with different datasets. Target values can be set to test edge cases.
+                </p>
+            </div>
+        </motion.div>
+    );
+}
 
 export default function Visualize() {
-  const navigate = useNavigate();
-  const { isAuthenticated, signOut } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const algoSlug = searchParams.get("algo");
-  const { algorithm } = useAlgorithmBySlug(algoSlug || "");
-  const { algorithms: allAlgorithms, isLoading } = useAlgorithms();
-  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
-  const [step, setStep] = useState<"options" | "domain" | "algorithm">(
-    algoSlug ? "algorithm" : "options"
-  );
-  const [showComplexity, setShowComplexity] = useState(true);
-  const [showComparison, setShowComparison] = useState(false);
+    const navigate = useNavigate();
+    const { isAuthenticated, signOut } = useAuth();
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const algoSlug = searchParams.get("algo");
+    const { algorithm } = useAlgorithmBySlug(algoSlug || "");
+    const { algorithms: allAlgorithms, isLoading } = useAlgorithms();
+    const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+    const [step, setStep] = useState<"options" | "domain" | "algorithm">(
+        algoSlug ? "algorithm" : "options"
+    );
+    const [showComplexity, setShowComplexity] = useState(true);
+    const [showComparison, setShowComparison] = useState(false);
+
+    // Visualizer data state
+    const [visualizerArray, setVisualizerArray] = useState<number[]>([64, 34, 25, 12, 22, 11, 90, 45, 78, 33]);
+    const [visualizerTarget, setVisualizerTarget] = useState<number>(22);
 
     useEffect(() => {
         if (algoSlug) {
@@ -112,9 +260,8 @@ export default function Visualize() {
 
             {/* Main Content */}
             <div
-                className={`flex-1 ${
-                    sidebarOpen ? "ml-80" : ""
-                } flex flex-col transition-all duration-300`}
+                className={`flex-1 ${sidebarOpen ? "ml-80" : ""
+                    } flex flex-col transition-all duration-300`}
             >
                 <div className="fixed inset-0 cyber-grid pointer-events-none" />
                 <div className="scanline fixed inset-0 pointer-events-none" />
@@ -213,49 +360,97 @@ export default function Visualize() {
                                 animate={{ opacity: 1 }}
                                 className="space-y-6"
                             >
-                                <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <Badge
-                                            variant="outline"
-                                            className="border-[var(--neon-cyan)] text-[var(--neon-cyan)] px-4 py-1"
-                                        >
-                                            {algorithm.domain}
-                                        </Badge>
-                                        <h2 className="text-xl font-bold">{algorithm.name}</h2>
+                                <div className="max-w-4xl mx-auto text-center space-y-4 mb-12">
+                                    <div className="flex flex-col items-center gap-3">
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className="border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] font-mono text-[10px] bg-[var(--neon-cyan)]/5">
+                                                {algorithm.domain || "DSA"}
+                                            </Badge>
+                                            <Badge variant="outline" className="border-[var(--neon-purple)]/30 text-[var(--neon-purple)] font-mono text-[10px] bg-[var(--neon-purple)]/5">
+                                                {algorithm.difficulty}
+                                            </Badge>
+                                            <Badge variant="outline" className="border-[var(--neon-green)]/30 text-[var(--neon-green)] font-mono text-[10px] bg-[var(--neon-green)]/5">
+                                                {algorithm.category}
+                                            </Badge>
+                                        </div>
+                                        <h2 className="text-4xl md:text-6xl font-black italic tracking-tighter text-white uppercase leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                                            {algorithm.name}
+                                        </h2>
+                                        <p className="text-white/40 text-sm md:text-base max-w-2xl mx-auto leading-relaxed italic">
+                                            {algorithm.description}
+                                        </p>
                                     </div>
-                                    <div className="flex gap-2 flex-wrap">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setShowComplexity(!showComplexity)}
-                                            className="border-[var(--neon-green)] text-[var(--neon-green)] hover:bg-[var(--neon-green)]/10"
-                                        >
-                                            <Activity className="w-4 h-4 mr-2" />
-                                            Complexity
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setShowComparison(!showComparison)}
-                                            className="border-[var(--neon-purple)] text-[var(--neon-purple)] hover:bg-[var(--neon-purple)]/10"
-                                        >
-                                            <Zap className="w-4 h-4 mr-2" />
-                                            Compare
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={handleReset}
-                                            className="border-[var(--neon-pink)] text-[var(--neon-pink)] hover:bg-[var(--neon-pink)]/10"
-                                        >
-                                            <RotateCcw className="w-4 h-4 mr-2" />
-                                            Change Algorithm
-                                        </Button>
+
+                                    {/* Compact Complexity Metrics */}
+                                    <div className="flex justify-center gap-6 mt-6">
+                                        <div className="text-center">
+                                            <div className="text-[10px] text-white/30 uppercase tracking-widest mb-1">Time</div>
+                                            <div className="text-[var(--neon-cyan)] font-mono font-bold">{algorithm.timeComplexity?.average || "O(n)"}</div>
+                                        </div>
+                                        <div className="w-px h-8 bg-white/10" />
+                                        <div className="text-center">
+                                            <div className="text-[10px] text-white/30 uppercase tracking-widest mb-1">Space</div>
+                                            <div className="text-[var(--neon-purple)] font-mono font-bold">{algorithm.spaceComplexity}</div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Main Visualization */}
-                                <VisualizationPlayer algorithm={algorithm} />
+                                {/* Main Visualization Area */}
+                                <div className="max-w-6xl mx-auto space-y-12">
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                                        {/* Visualizer Column */}
+                                        <div className="lg:col-span-8 space-y-6">
+                                            <div className="relative group">
+                                                <div className="absolute -inset-1 bg-gradient-to-r from-[var(--neon-cyan)]/20 to-[var(--neon-purple)]/20 rounded-3xl blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
+
+                                                <div className="relative bg-[#0a0a0c]/40 backdrop-blur-3xl border border-white/5 rounded-3xl p-6 md:p-10 shadow-3xl overflow-hidden min-h-[500px] flex items-center justify-center">
+                                                    <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+
+                                                    <div className="w-full">
+                                                        <AlgorithmVisualizer
+                                                            type={algorithm.slug as AlgorithmType}
+                                                            array={visualizerArray}
+                                                            target={visualizerTarget}
+                                                            hideHeader={true}
+                                                            code={algorithm.implementations?.javascript || algorithm.pseudocode}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Configuration Panel Column */}
+                                        <div className="lg:col-span-4 sticky top-24">
+                                            <ConfigurationPanel
+                                                algorithm={algorithm}
+                                                visualizerArray={visualizerArray}
+                                                setVisualizerArray={setVisualizerArray}
+                                                visualizerTarget={visualizerTarget}
+                                                setVisualizerTarget={setVisualizerTarget}
+                                            />
+
+                                            {/* Action Toggles */}
+                                            <div className="grid grid-cols-2 gap-3 mt-6">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setShowComplexity(!showComplexity)}
+                                                    className={`h-12 rounded-xl transition-all ${showComplexity ? 'bg-[var(--neon-green)]/10 border-[var(--neon-green)]/30 text-[var(--neon-green)]' : 'border-white/5 text-white/40 hover:bg-white/5'}`}
+                                                >
+                                                    <Activity className="w-4 h-4 mr-2" />
+                                                    Analysis
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setShowComparison(!showComparison)}
+                                                    className={`h-12 rounded-xl transition-all ${showComparison ? 'bg-[var(--neon-purple)]/10 border-[var(--neon-purple)]/30 text-[var(--neon-purple)]' : 'border-white/5 text-white/40 hover:bg-white/5'}`}
+                                                >
+                                                    <Zap className="w-4 h-4 mr-2" />
+                                                    Related
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 {/* Complexity Analysis */}
                                 {showComplexity && (
@@ -503,9 +698,9 @@ export default function Visualize() {
                                             Use Cases
                                         </h3>
                                         <ul className="text-sm space-y-2">
-                                            {(algorithm.useCases || algorithm.applications || [])
+                                            {(algorithm.applications || [])
                                                 .slice(0, 3)
-                                                .map((useCase, idx) => (
+                                                .map((useCase: string, idx: number) => (
                                                     <li key={idx} className="flex items-start gap-2">
                                                         <span className="text-[var(--neon-cyan)] font-bold">
                                                             •

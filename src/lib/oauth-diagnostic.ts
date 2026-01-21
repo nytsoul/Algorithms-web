@@ -42,7 +42,23 @@ export async function testGoogleOAuth() {
     console.log("   - No OAuth callback parameters");
   }
 
-  // Test 5: Recommendations
+  // Test 5: Check Database Connectivity
+  console.log("\n5. Database Connectivity Check:");
+  try {
+    const { data, error } = await supabase.from('user_profiles').select('id').limit(1);
+    if (error) {
+      console.error("   ❌ Database profile check failed:", error.message);
+      if (error.message.includes("relation") || error.message.includes("does not exist")) {
+        console.warn("   ⚠️ 'user_profiles' table seems to be missing!");
+      }
+    } else {
+      console.log("   ✅ Database connection & profiles table OK");
+    }
+  } catch (err) {
+    console.error("   ❌ Database exception:", err);
+  }
+
+  // Test 6: Recommendations
   console.log("\n5. Diagnostics & Recommendations:");
   if (!isSupabaseConfigured) {
     console.error("   ❌ Supabase not configured. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY");

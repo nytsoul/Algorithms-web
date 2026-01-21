@@ -75,8 +75,14 @@ export default function VisualizationPlayer({ algorithm, compact = false }: Visu
 
     const renderVisualization = () => {
         const type: string = algorithm?.visualizationType || "none";
+        const category = algorithm?.category || "";
 
-        switch (type) {
+        // Fallback for missing type or generic type
+        const effectiveType = (type === "none" || type === "custom")
+            ? (category === "Searching" || category === "Sorting" ? "array" : type)
+            : type;
+
+        switch (effectiveType) {
             case "array":
                 if (algorithm.name.toLowerCase().includes("sort")) {
                     return (
@@ -122,6 +128,17 @@ export default function VisualizationPlayer({ algorithm, compact = false }: Visu
                     />
                 );
             default:
+                // Final fallback: if it has array data, try to render it
+                if (Array.isArray(currentStepData.data) && !Array.isArray(currentStepData.data[0])) {
+                    return (
+                        <ArrayVisualization
+                            data={(currentStepData.data as any[]) || []}
+                            activeIndex={currentStepData.activeIndices || []}
+                            comparedIndex={currentStepData.comparedIndices || []}
+                            sortedIndex={currentStepData.sortedIndices || []}
+                        />
+                    );
+                }
                 return <GenericVisualization algorithmName={algorithm?.name || "Algorithm"} />;
         }
     };

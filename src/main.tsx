@@ -27,6 +27,7 @@ const Playground = lazy(() => import("./pages/Playground"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
 const DecisionEngine = lazy(() => import("./pages/DecisionEngine"));
+const AlgorithmVisualizationsDemo = lazy(() => import("./pages/AlgorithmVisualizationsDemo"));
 
 // Simple loading fallback for route transitions
 function RouteLoading() {
@@ -92,6 +93,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="/learn" element={<Learn />} />
               <Route path="/adaptive" element={<AdaptiveLearning />} />
               <Route path="/decision-engine" element={<DecisionEngine />} />
+              <Route path="/visualizations" element={<AlgorithmVisualizationsDemo />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
