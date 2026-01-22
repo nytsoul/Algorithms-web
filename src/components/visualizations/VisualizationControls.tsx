@@ -34,28 +34,28 @@ export function VisualizationControls({
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden flex flex-col"
+            className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col overflow-hidden"
         >
-            {/* Progress Bar - Edge to Edge */}
-            <div className="w-full h-1.5 bg-white/5 relative group cursor-pointer">
-                <motion.div
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-purple)] to-[var(--neon-pink)]"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.3 }}
-                />
-                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-
             <div className="p-6 space-y-6">
-                {/* Progress Labels */}
-                <div className="flex justify-between items-end text-[10px] font-black uppercase tracking-widest font-mono">
-                    <span className="text-white/40">Execution Progress</span>
-                    <div className="flex items-center gap-3">
-                        <span className="text-white/60">
-                            Step <span className="text-[var(--neon-cyan)] font-bold">{currentStepIndex + 1}</span> <span className="opacity-30">/</span> {steps.length}
-                        </span>
-                        <span className="text-[var(--neon-purple)]">{Math.round(progress)}%</span>
+                {/* Progress Section */}
+                <div className="space-y-3">
+                    <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-[0.2em] font-mono">
+                        <span className="text-white/40">Progress</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[var(--neon-cyan)] font-bold">{currentStepIndex + 1}</span>
+                            <span className="text-white/20">/</span>
+                            <span className="text-white/60">{steps.length}</span>
+                        </div>
+                    </div>
+
+                    {/* Horizontal Progress Bar - Full Width of container */}
+                    <div className="relative h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <motion.div
+                            className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-purple)] to-[var(--neon-pink)]"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{ duration: 0.3 }}
+                        />
                     </div>
                 </div>
 
