@@ -1,7 +1,7 @@
 // Algorithm data schema and types
 
 export type DifficultyLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
-export type VisualizationType = 'array' | 'graph' | 'tree' | 'table' | 'matrix' | 'bitwise' | 'custom';
+export type VisualizationType = 'array' | 'graph' | 'tree' | 'table' | 'matrix' | 'bitwise' | 'custom' | 'network' | 'geometric';
 export type AlgorithmCategory =
     | 'Searching'
     | 'Sorting'
@@ -98,4 +98,35 @@ export interface VisualizationState {
         swaps: number;
         operations: number;
     };
+}
+
+// Type guards and converters
+export function normalizeCategoryToDifficultyLevel(value: any): DifficultyLevel {
+    const validLevels: DifficultyLevel[] = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
+    return validLevels.includes(value) ? value : 'Beginner';
+}
+
+export function normalizeCategoryToAlgorithmCategory(value: any): AlgorithmCategory {
+    const categoryMap: Record<string, AlgorithmCategory> = {
+        'searching': 'Searching',
+        'sorting': 'Sorting',
+        'divide and conquer': 'Divide and Conquer',
+        'divide-and-conquer': 'Divide and Conquer',
+        'greedy': 'Greedy',
+        'dynamic programming': 'Dynamic Programming',
+        'backtracking': 'Backtracking',
+        'branch and bound': 'Branch and Bound',
+        'graph': 'Graph',
+        'string': 'String',
+        'bit manipulation': 'Bit Manipulation',
+        'np-complete': 'NP-Complete',
+    };
+    
+    const normalized = (value || '').toLowerCase().trim();
+    return categoryMap[normalized] || 'Searching';
+}
+
+export function normalizeVisualizationType(value: any): VisualizationType {
+    const validTypes: VisualizationType[] = ['array', 'graph', 'tree', 'table', 'matrix', 'bitwise', 'custom', 'network', 'geometric'];
+    return validTypes.includes(value) ? value : 'array';
 }

@@ -1,4 +1,5 @@
-import { Algorithm } from './algorithms-data';
+import { AlgorithmData } from './algorithm-schema';
+import { normalizeCategoryToAlgorithmCategory, normalizeVisualizationType, type AlgorithmCategory, type VisualizationType } from './algorithm-schema';
 
 // Helper function to create algorithm objects
 export function createAlgorithm(
@@ -10,21 +11,27 @@ export function createAlgorithm(
     difficulty: "Beginner" | "Intermediate" | "Advanced" | "Expert",
     paradigm: string,
     description: string
-): Algorithm {
+): AlgorithmData {
     const slug = name.toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
+    
+    const normalizedCategory: AlgorithmCategory = normalizeCategoryToAlgorithmCategory(category);
+    const visualizationType: VisualizationType = normalizeVisualizationType(
+        domainId <= 2 ? "array" : domainId <= 10 ? "graph" : domainId <= 21 ? "tree" : "custom"
+    );
 
     return {
-        _id: id.toString(),
+        id: id.toString(),
         name,
         slug,
         description,
-        category,
+        category: normalizedCategory,
+        difficulty,
+        definition: description,
         domain,
         domainId,
         algorithmNumber: id,
-        difficulty,
         paradigm,
         tags: [category.toLowerCase(), paradigm.toLowerCase()],
         timeComplexity: {
@@ -33,18 +40,18 @@ export function createAlgorithm(
             worst: "O(n)"
         },
         spaceComplexity: "O(1)",
-        implementation: `// ${name} implementation\nfunction ${slug.replace(/-/g, '_')}(input) {\n  // Implementation\n  return result;\n}`,
+        implementations: {
+            javascript: `// ${name} implementation\nfunction ${slug.replace(/-/g, '_')}(input) {\n  // Implementation\n  return result;\n}`,
+            python: "# Python implementation",
+            java: "// Java implementation",
+            cpp: "// C++ implementation"
+        },
         pseudocode: `procedure ${name.replace(/[^a-zA-Z0-9]/g, '')}\n    // Algorithm steps\nend procedure`,
-        intuition: description,
-        visualizationType: domainId <= 2 ? "array" : domainId <= 10 ? "graph" : domainId <= 21 ? "tree" : "custom",
+        visualizationType,
+        realWorldExample: `Used in ${domain} problems to efficiently solve ${category.toLowerCase()} tasks`,
         applications: [`${domain} applications`, "Research", "Industry"],
-        advantages: ["Efficient", "Well-studied"],
-        disadvantages: ["Complexity trade-offs"],
-        relatedAlgorithms: [],
-        researchReferences: [],
-        language: "javascript",
-        useCases: [`${category} problems`],
-        realWorldExamples: [`${domain} systems`]
+        prerequisites: [],
+        relatedAlgorithms: []
     };
 }
 

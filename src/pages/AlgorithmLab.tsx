@@ -15,17 +15,17 @@ const AlgorithmLabPage = () => {
   const filteredAlgorithms = COMPREHENSIVE_1000_PLUS_ALGORITHMS.filter((algo) =>
     algo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     algo.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    algo.domain.toLowerCase().includes(searchTerm.toLowerCase())
+    algo.domain?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddAlgorithm = (algo: Algorithm) => {
-    if (!selectedAlgorithms.find((a) => a._id === algo._id)) {
+    if (!selectedAlgorithms.find((a) => a.id === algo.id)) {
       setSelectedAlgorithms([...selectedAlgorithms, algo]);
     }
   };
 
   const handleRemoveAlgorithm = (id: string) => {
-    setSelectedAlgorithms(selectedAlgorithms.filter((a) => a._id !== id));
+    setSelectedAlgorithms(selectedAlgorithms.filter((a) => a.id !== id));
   };
 
   // Sample visualization steps
@@ -67,7 +67,7 @@ const AlgorithmLabPage = () => {
       title: 'Algorithm Concept',
       content: `${algo.name} is a ${algo.paradigm || 'specialized'} algorithm used in the ${algo.category} category.`,
       explanation: 'Understanding the core concept helps you apply it to different problems.',
-      code: algo.implementation.substring(0, 200) + '...',
+      code: (algo.implementation || '').substring(0, 200) + '...',
     },
     {
       title: 'Time Complexity',
@@ -111,13 +111,13 @@ const AlgorithmLabPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto">
             {filteredAlgorithms.slice(0, 30).map((algo) => (
               <button
-                key={algo._id}
+                key={algo.id}
                 onClick={() => {
                   setSelectedAlgorithm(algo);
                   handleAddAlgorithm(algo);
                 }}
                 className={`p-3 rounded text-left transition-all ${
-                  selectedAlgorithms.find((a) => a._id === algo._id)
+                  selectedAlgorithms.find((a) => a.id === algo.id)
                     ? 'bg-blue-600 text-white'
                     : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
                 }`}

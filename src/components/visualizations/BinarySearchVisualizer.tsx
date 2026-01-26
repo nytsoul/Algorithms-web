@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, SkipForward, SkipBack, RotateCcw } from 'lucide-react';
 
@@ -58,6 +58,8 @@ function runBinarySearchSteps(arr: number[], target: number): { steps: SearchSte
     return { steps, foundIndex: -1 };
 }
 
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
 export function BinarySearchVisualizer({ hideHeader = false }: BinarySearchVisualizerProps) {
     const [arraySize, setArraySize] = useState(21);
     const [arrayType, setArrayType] = useState<'even' | 'random'>('even');
@@ -97,6 +99,12 @@ export function BinarySearchVisualizer({ hideHeader = false }: BinarySearchVisua
     }, [isPlaying, steps.length]);
 
     const currentStep = steps[stepIdx] || null;
+    const safeTimelineLength = Math.max(1, arr.length);
+    const optimalComparisons = useMemo(() => Math.ceil(Math.log2(Math.max(2, arr.length + 1))), [arr.length]);
+    const totalComparisons = steps.length ? steps[steps.length - 1].cmp : 0;
+    const efficiencyRatio = totalComparisons && optimalComparisons
+        ? (totalComparisons / optimalComparisons).toFixed(2)
+        : null;
 
     const handlePrev = () => {
         setIsPlaying(false);
@@ -113,6 +121,19 @@ export function BinarySearchVisualizer({ hideHeader = false }: BinarySearchVisua
             setStepIdx(0);
         }
         setIsPlaying(prev => !prev);
+    };
+
+    const handleJumpToStep = (idx: number) => {
+        setIsPlaying(false);
+        setStepIdx(idx);
+    };
+
+    const describeAction = (action: string) => {
+        if (action === 'FOUND') return 'Target identified';
+        if (action.startsWith('NOT FOUND')) return 'Search exhausted';
+        if (action.includes('lo = mid + 1')) return 'Discard left half';
+        if (action.includes('hi = mid - 1')) return 'Discard right half';
+        return 'Comparing midpoint';
     };
 
     return (
@@ -349,6 +370,78 @@ export function BinarySearchVisualizer({ hideHeader = false }: BinarySearchVisua
                                     {currentStep?.cmp ?? 0}
                                 </span>
                             </div>
+                            <div className="flex justify-between">
+                                <span className="text-white/60 text-sm">Optimal (⌈log₂ n⌉):</span>
+                                <span className="text-white font-mono font-bold">
+                                    {optimalComparisons}
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-white/60 text-sm">Efficiency:</span>
+                                <span className="text-white font-mono font-bold">
+                                    {efficiencyRatio ? `${efficiencyRatio}x optimal` : '-'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="text-xs text-white/40 uppercase tracking-wider">
+                                Interval Timeline
+                            </div>
+                            <span className="text-[var(--neon-cyan)] text-[0.65rem] uppercase tracking-widest">
+                                Click to jump
+                            </span>
+                        </div>
+                        <div className="space-y-3">
+                            {steps.length === 0 && (
+                                <p className="text-white/40 text-sm">Run a search to reveal interval history.</p>
+                            )}
+                            {steps.map((step, idx) => {
+                                const isActive = idx === stepIdx;
+                                const baseWidth = step.hi >= step.lo
+                                    ? clamp(((step.hi - step.lo + 1) / safeTimelineLength) * 100, 2, 100)
+                                    : 2;
+                                const leftOffset = clamp((step.lo / safeTimelineLength) * 100, 0, 100);
+                                const availableWidth = Math.max(0, 100 - leftOffset);
+                                const visualWidth = Math.min(baseWidth, availableWidth || 2);
+                                const adjustedLeft = leftOffset + visualWidth > 100
+                                    ? Math.max(0, 100 - visualWidth)
+                                    : leftOffset;
+                                const midOffset = step.mid !== null
+                                    ? clamp(((step.mid + 0.5) / safeTimelineLength) * 100, 0, 100)
+                                    : null;
+
+                                return (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => handleJumpToStep(idx)}
+                                        className={`w-full text-left bg-black/20 rounded-xl p-3 transition-colors ${isActive ? 'ring-1 ring-[var(--neon-cyan)]/60 bg-black/40' : 'hover:bg-black/30'}`}
+                                    >
+                                        <div className="flex items-center justify-between text-xs text-white/60">
+                                            <span>Step {idx}</span>
+                                            <span className="font-mono text-white/50">[{step.lo}, {step.hi}]</span>
+                                        </div>
+                                        <div className="relative h-4 bg-white/5 rounded-full overflow-hidden mt-2">
+                                            <div
+                                                className={`absolute inset-y-0 ${isActive ? 'bg-[var(--neon-cyan)]/40' : 'bg-white/20'}`}
+                                                style={{ left: `${adjustedLeft}%`, width: `${visualWidth}%` }}
+                                            />
+                                            {midOffset !== null && (
+                                                <div
+                                                    className="absolute inset-y-0 w-0.5 bg-[var(--neon-purple)]"
+                                                    style={{ left: `${midOffset}%` }}
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="text-[0.6rem] text-white/50 uppercase tracking-wider mt-2">
+                                            {describeAction(step.action)}
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

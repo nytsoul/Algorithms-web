@@ -31,8 +31,8 @@ export default function Compare() {
     };
 
     const toggleAlgorithm = (algo: Algorithm) => {
-        if (selectedAlgorithms.find(a => a._id === algo._id)) {
-            setSelectedAlgorithms(selectedAlgorithms.filter(a => a._id !== algo._id));
+        if (selectedAlgorithms.find(a => a.id === algo.id)) {
+            setSelectedAlgorithms(selectedAlgorithms.filter(a => a.id !== algo.id));
         } else if (selectedAlgorithms.length < 4) {
             setSelectedAlgorithms([...selectedAlgorithms, algo]);
         }
@@ -92,7 +92,7 @@ export default function Compare() {
                             <h2 className="text-2xl font-bold mb-4">Selected for Comparison ({selectedAlgorithms.length}/4)</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                                 {selectedAlgorithms.map((algo) => (
-                                    <Card key={algo._id} className="cyber-card p-4 bg-card/50 backdrop-blur-sm">
+                                    <Card key={algo.id} className="cyber-card p-4 bg-card/50 backdrop-blur-sm">
                                         <div className="flex items-start justify-between mb-2">
                                             <h3 className="font-bold text-sm">{algo.name}</h3>
                                             <Button
@@ -117,7 +117,7 @@ export default function Compare() {
                                             <tr className="border-b border-border">
                                                 <th className="text-left p-3 text-[var(--neon-cyan)]">Metric</th>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <th key={algo._id} className="text-left p-3">{algo.name}</th>
+                                                    <th key={algo.id} className="text-left p-3">{algo.name}</th>
                                                 ))}
                                             </tr>
                                         </thead>
@@ -125,7 +125,7 @@ export default function Compare() {
                                             <tr className="border-b border-border/50">
                                                 <td className="p-3 font-semibold">Difficulty</td>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <td key={algo._id} className="p-3">
+                                                    <td key={algo.id} className="p-3">
                                                         <Badge className={`
                             ${algo.difficulty === "Beginner" ? "bg-[var(--neon-green)]/20 text-[var(--neon-green)]" : ""}
                             ${algo.difficulty === "Intermediate" ? "bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)]" : ""}
@@ -140,7 +140,7 @@ export default function Compare() {
                                             <tr className="border-b border-border/50">
                                                 <td className="p-3 font-semibold">Best Time</td>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <td key={algo._id} className="p-3 font-mono text-sm text-[var(--neon-green)]">
+                                                    <td key={algo.id} className="p-3 font-mono text-sm text-[var(--neon-green)]">
                                                         {algo.timeComplexity.best}
                                                     </td>
                                                 ))}
@@ -148,7 +148,7 @@ export default function Compare() {
                                             <tr className="border-b border-border/50">
                                                 <td className="p-3 font-semibold">Average Time</td>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <td key={algo._id} className="p-3 font-mono text-sm text-[var(--neon-cyan)]">
+                                                    <td key={algo.id} className="p-3 font-mono text-sm text-[var(--neon-cyan)]">
                                                         {algo.timeComplexity.average}
                                                     </td>
                                                 ))}
@@ -156,7 +156,7 @@ export default function Compare() {
                                             <tr className="border-b border-border/50">
                                                 <td className="p-3 font-semibold">Worst Time</td>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <td key={algo._id} className="p-3 font-mono text-sm text-[var(--neon-pink)]">
+                                                    <td key={algo.id} className="p-3 font-mono text-sm text-[var(--neon-pink)]">
                                                         {algo.timeComplexity.worst}
                                                     </td>
                                                 ))}
@@ -164,7 +164,7 @@ export default function Compare() {
                                             <tr className="border-b border-border/50">
                                                 <td className="p-3 font-semibold">Space Complexity</td>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <td key={algo._id} className="p-3 font-mono text-sm text-[var(--neon-yellow)]">
+                                                    <td key={algo.id} className="p-3 font-mono text-sm text-[var(--neon-yellow)]">
                                                         {algo.spaceComplexity}
                                                     </td>
                                                 ))}
@@ -172,19 +172,19 @@ export default function Compare() {
                                             <tr className="border-b border-border/50">
                                                 <td className="p-3 font-semibold">Domain</td>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <td key={algo._id} className="p-3 text-sm">{algo.domain}</td>
+                                                    <td key={algo.id} className="p-3 text-sm">{algo.domain}</td>
                                                 ))}
                                             </tr>
                                             <tr className="border-b border-border/50">
                                                 <td className="p-3 font-semibold">Paradigm</td>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <td key={algo._id} className="p-3 text-sm">{algo.paradigm || "N/A"}</td>
+                                                    <td key={algo.id} className="p-3 text-sm">{algo.paradigm || "N/A"}</td>
                                                 ))}
                                             </tr>
                                             <tr>
                                                 <td className="p-3 font-semibold">Actions</td>
                                                 {selectedAlgorithms.map((algo) => (
-                                                    <td key={algo._id} className="p-3">
+                                                    <td key={algo.id} className="p-3">
                                                         <Link to={`/algorithm/${algo.slug}`}>
                                                             <Button size="sm" variant="outline">
                                                                 View Details <ArrowRight className="w-3 h-3 ml-1" />
@@ -216,12 +216,12 @@ export default function Compare() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredAlgorithms.slice(0, 50).map((algo, index) => {
-                            const isSelected = selectedAlgorithms.find(a => a._id === algo._id);
+                            const isSelected = selectedAlgorithms.find(a => a.id === algo.id);
                             const canSelect = selectedAlgorithms.length < 4;
 
                             return (
                                 <motion.div
-                                    key={algo._id}
+                                    key={algo.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.02 }}

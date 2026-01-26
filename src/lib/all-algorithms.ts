@@ -269,7 +269,7 @@ function generateRemainingAlgorithms(): Algorithm[] {
 }
 
 // Combine all algorithms (1-1000)
-export const ALL_1000_ALGORITHMS: Algorithm[] = [
+export const ALL_1000_ALGORITHMS: any[] = [
     ...searchingAlgorithms,
     ...sortingAlgorithms,
     ...divideConquerAlgorithms,

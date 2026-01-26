@@ -86,12 +86,12 @@ export const AlgorithmComparison: React.FC<AlgorithmComparisonProps> = ({
         <div className="flex flex-wrap gap-3">
           {selectedAlgorithms.map((algo) => (
             <div
-              key={algo._id}
+              key={algo.id}
               className="flex items-center gap-2 bg-slate-700 rounded-full px-4 py-2"
             >
               <span className="text-sm text-white">{algo.name}</span>
               <button
-                onClick={() => onRemove?.(algo._id)}
+                onClick={() => onRemove?.(algo.id)}
                 className="text-slate-400 hover:text-red-400"
               >
                 <X size={14} />
@@ -220,7 +220,7 @@ export const AlgorithmComparison: React.FC<AlgorithmComparisonProps> = ({
           </thead>
           <tbody>
             {selectedAlgorithms.map((algo) => (
-              <tr key={algo._id} className="border-b border-slate-700 hover:bg-slate-700/50">
+              <tr key={algo.id} className="border-b border-slate-700 hover:bg-slate-700/50">
                 <td className="py-3 px-4 text-white">{algo.name}</td>
                 <td className="py-3 px-4 text-green-400">{algo.timeComplexity.best}</td>
                 <td className="py-3 px-4 text-blue-400">{algo.timeComplexity.average}</td>

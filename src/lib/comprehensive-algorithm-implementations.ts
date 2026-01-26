@@ -1,4 +1,5 @@
-import { Algorithm } from './algorithms-data';
+import { AlgorithmData } from './algorithm-schema';
+import { normalizeCategoryToAlgorithmCategory, normalizeVisualizationType, type AlgorithmCategory, type VisualizationType } from './algorithm-schema';
 
 // Helper function to create algorithm with comprehensive data
 function createAlgorithm(
@@ -13,7 +14,7 @@ function createAlgorithm(
     implementation: string,
     pseudocode: string,
     intuition: string,
-    visualizationType: "array" | "graph" | "tree" | "matrix" | "network" | "geometric" | "custom",
+    visualizationType: string,
     timeComplexity: { best: string; average: string; worst: string },
     spaceComplexity: string,
     applications: string[],
@@ -26,17 +27,21 @@ function createAlgorithm(
     precondition?: string,
     inventor?: string,
     yearIntroduced?: number
-): Algorithm {
+): AlgorithmData {
     const slug = name.toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
 
+    const normalizedCategory: AlgorithmCategory = normalizeCategoryToAlgorithmCategory(category);
+    const normalizedVisualizationType: VisualizationType = normalizeVisualizationType(visualizationType);
+
     return {
-        _id: id.toString(),
+        id: id.toString(),
         name,
         slug,
         description,
-        category,
+        definition: description,
+        category: normalizedCategory,
         domain,
         domainId,
         algorithmNumber: id,
@@ -45,25 +50,18 @@ function createAlgorithm(
         tags: [category.toLowerCase(), paradigm.toLowerCase(), domain.toLowerCase()],
         timeComplexity,
         spaceComplexity,
-        implementation,
+        implementations: {
+            javascript: implementation,
+            python: "# Python implementation",
+            java: "// Java implementation",
+            cpp: "// C++ implementation"
+        },
         pseudocode,
-        intuition,
-        visualizationType,
+        visualizationType: normalizedVisualizationType,
+        realWorldExample: `Used in ${domain} systems for ${category.toLowerCase()} tasks`,
         applications,
-        advantages,
-        disadvantages,
-        relatedAlgorithms: [],
-        researchReferences: [],
-        language: "javascript",
-        useCases: applications,
-        realWorldExamples: applications,
-        stepByStepWorking,
-        dryRun,
-        keyPoints,
-        problemStatement,
-        precondition,
-        inventor,
-        yearIntroduced
+        prerequisites: [],
+        relatedAlgorithms: []
     };
 }
 

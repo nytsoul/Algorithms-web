@@ -1,4 +1,5 @@
-import { Algorithm } from './algorithms-data';
+import { AlgorithmData } from './algorithm-schema';
+import { normalizeCategoryToAlgorithmCategory, normalizeVisualizationType, type AlgorithmCategory, type VisualizationType } from './algorithm-schema';
 
 // Helper function to create algorithm with full metadata
 const createAlgorithm = (
@@ -8,17 +9,20 @@ const createAlgorithm = (
   domainId: number,
   category: string,
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert',
-  visualizationType: 'array' | 'tree' | 'graph' | 'matrix' | 'network',
+  visualizationType: string,
   complexity: { best: string; average: string; worst: string; space: string }
-): Algorithm => {
+): AlgorithmData => {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const normalizedCategory: AlgorithmCategory = normalizeCategoryToAlgorithmCategory(category);
+  const normalizedVisualizationType: VisualizationType = normalizeVisualizationType(visualizationType);
   
   return {
-    _id: id.toString(),
+    id: id.toString(),
     name,
     slug,
     description: `${name} is a fundamental algorithm in ${category}. It efficiently processes data structures and solves computational problems with optimal time and space complexity. Used extensively in ${domain.toLowerCase()} for real-world applications including data processing, optimization, and system design.`,
-    category,
+    definition: `${name} is a fundamental algorithm`,
+    category: normalizedCategory,
     domain,
     domainId,
     algorithmNumber: id,
@@ -31,7 +35,8 @@ const createAlgorithm = (
       worst: complexity.worst
     },
     spaceComplexity: complexity.space,
-    implementation: `// ${name} Implementation
+    implementations: {
+      javascript: `// ${name} Implementation
 function ${slug.replace(/-/g, '')}(input) {
   // Initialize data structures
   let result = [];
@@ -49,6 +54,10 @@ function processElement(element) {
   // Element processing logic
   return element;
 }`,
+      python: "# Python implementation",
+      java: "// Java implementation",
+      cpp: "// C++ implementation"
+    },
     pseudocode: `ALGORITHM ${name.toUpperCase()}
 INPUT: Array or data structure
 OUTPUT: Processed result
@@ -61,8 +70,7 @@ BEGIN
      END FOR
   3. RETURN result
 END`,
-    intuition: `${name} works by systematically processing input data using ${category.toLowerCase()} techniques. The algorithm maintains optimal performance by leveraging efficient data structures and minimizing redundant operations. Key insight: ${category} approaches solve problems by breaking them into manageable subproblems.`,
-    visualizationType,
+    visualizationType: normalizedVisualizationType,
     applications: [
       `${domain} optimization problems`,
       'Data structure manipulation',
@@ -70,41 +78,9 @@ END`,
       'Algorithm design patterns',
       'Competitive programming challenges'
     ],
-    advantages: [
-      `Optimal ${complexity.average} time complexity`,
-      'Efficient space utilization',
-      'Easy to implement and understand',
-      'Widely applicable across domains',
-      'Well-tested and proven approach'
-    ],
-    disadvantages: [
-      'May have edge cases requiring special handling',
-      `Worst case ${complexity.worst} in certain inputs`,
-      'Requires understanding of underlying concepts',
-      'Performance varies with input characteristics'
-    ],
-    relatedAlgorithms: [],
-    researchReferences: [
-      `"${name}: Theory and Applications" - Computer Science Journal`,
-      `"Optimizing ${category} Algorithms" - ACM Computing Surveys`,
-      'Introduction to Algorithms (CLRS)',
-      'Algorithm Design Manual (Skiena)'
-    ],
-    language: 'javascript',
-    useCases: [
-      `Solving ${domain.toLowerCase()} problems efficiently`,
-      'Optimizing data processing pipelines',
-      'Building scalable system architectures',
-      'Implementing core software components'
-    ],
-    realWorldExamples: [
-      `${domain} in production systems`,
-      'Large-scale data processing',
-      'Real-time algorithm execution',
-      'Enterprise software solutions'
-    ],
-    yearIntroduced: 1950 + (id % 70),
-    inventor: 'Computer Scientists'
+    realWorldExample: `Applied in ${domain} scenarios for solving ${category.toLowerCase()} problems efficiently`,
+    prerequisites: [],
+    relatedAlgorithms: []
   };
 };
 
@@ -125,8 +101,8 @@ const COMPLEXITY_MAP: Record<string, any> = {
 };
 
 // Generate all 1000 algorithms
-export const generateAll1000Algorithms = (): Algorithm[] => {
-  const algorithms: Algorithm[] = [];
+export const generateAll1000Algorithms = (): AlgorithmData[] => {
+  const algorithms: AlgorithmData[] = [];
   let id = 1;
 
   // Helper to add algorithms in bulk
