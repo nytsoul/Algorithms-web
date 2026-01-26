@@ -144,16 +144,16 @@ export default function Learn() {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Badge className="bg-[var(--neon-yellow)] text-background border-none">Challenge #142</Badge>
-                    <h3 className="text-4xl font-bold">Invert Binary Tree</h3>
+                    <h3 className="text-4xl font-bold">Master Binary Search</h3>
                     <p className="text-lg text-muted-foreground leading-relaxed">
-                      A classic problem made famous by Google. Implement an algorithm to flip a binary tree horizontally. Essential for understanding recursion.
+                      A fundamental algorithm for efficient searching in sorted arrays. Learn how to reduce search time from O(n) to O(log n). Essential for system design.
                     </p>
                   </div>
                   <div className="flex gap-4">
                     <Button
                       onClick={() => {
                         completeDailyProtocol();
-                        navigate("/algorithm/invert-binary-tree");
+                        navigate("/algorithm/binary-search");
                       }}
                       className="bg-[var(--neon-yellow)] text-background hover:bg-[var(--neon-yellow)]/90 h-12 px-8 font-bold"
                     >

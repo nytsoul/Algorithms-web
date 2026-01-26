@@ -7,12 +7,12 @@ export interface AlgorithmDomain {
     color: string;
 }
 
-// Updated domains matching the seed script (1130 total algorithms across 11 domains)
+// Updated domains matching the seed script (1000 total algorithms across 11 domains)
 export const ALGORITHM_DOMAINS: AlgorithmDomain[] = [
     { 
         id: 1, 
         name: "DSA", 
-        count: 111, 
+        count: 95, 
         icon: "💾", 
         description: "Data Structures & Algorithms - Foundation layer for implementation", 
         color: "cyan" 
@@ -52,7 +52,7 @@ export const ALGORITHM_DOMAINS: AlgorithmDomain[] = [
     { 
         id: 6, 
         name: "Security", 
-        count: 117, 
+        count: 100, 
         icon: "🔐", 
         description: "Security & Cryptography - Confidentiality, integrity, and authentication", 
         color: "red" 
@@ -60,7 +60,7 @@ export const ALGORITHM_DOMAINS: AlgorithmDomain[] = [
     { 
         id: 7, 
         name: "Systems", 
-        count: 113, 
+        count: 95, 
         icon: "⚙️", 
         description: "Systems - OS, Distributed Systems, and Cloud Computing", 
         color: "yellow" 
@@ -68,7 +68,7 @@ export const ALGORITHM_DOMAINS: AlgorithmDomain[] = [
     { 
         id: 8, 
         name: "Graphics", 
-        count: 121, 
+        count: 105, 
         icon: "🎨", 
         description: "Graphics & Vision - Visual computation and image processing", 
         color: "indigo" 
@@ -84,7 +84,7 @@ export const ALGORITHM_DOMAINS: AlgorithmDomain[] = [
     { 
         id: 10, 
         name: "Emerging", 
-        count: 111, 
+        count: 85, 
         icon: "🚀", 
         description: "Emerging CS Domains - Modern and interdisciplinary fields", 
         color: "teal" 
@@ -92,7 +92,7 @@ export const ALGORITHM_DOMAINS: AlgorithmDomain[] = [
     { 
         id: 11, 
         name: "Theory", 
-        count: 105, 
+        count: 68, 
         icon: "🎓", 
         description: "Theory - Theoretical CS and mathematical foundations", 
         color: "violet" 

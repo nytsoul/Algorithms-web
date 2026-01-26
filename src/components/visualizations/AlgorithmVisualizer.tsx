@@ -220,7 +220,7 @@ const computeLocalSteps = (props: AlgorithmVisualizerProps): AlgorithmStep[] => 
         case 'job-sequencing': return algorithmGenerators.jobSequencing([4, 1, 1, 1], [20, 10, 40, 30]);
         case 'huffman': return algorithmGenerators.huffman(['a', 'b', 'c', 'd', 'e', 'f'], [5, 9, 12, 13, 16, 45]);
         case 'coin-change-greedy': return algorithmGenerators.coinChangeGreedy([1, 2, 5, 10, 20, 50, 100], target || 93);
-        case 'min-platforms': return algorithmGenerators.minPlatforms([900, 940, 950, 1100, 1500, 1800], [910, 1200, 1120, 1130, 1900, 2000]);
+        case 'min-platforms': return algorithmGenerators.minPlatforms([900, 940, 950, 1100, 1500, 1800], [910, 1200, 1120, 1000, 1900, 2000]);
         case 'optimal-merge': return algorithmGenerators.optimalMerge(currentArray);
         case 'karatsuba': return algorithmGenerators.karatsuba(target || 1234, n || 5678);
         case 'closest-pair': return algorithmGenerators.closestPair([{ x: 2, y: 3 }, { x: 12, y: 30 }, { x: 40, y: 50 }, { x: 5, y: 1 }, { x: 12, y: 10 }, { x: 3, y: 4 }]);
