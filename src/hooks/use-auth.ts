@@ -13,7 +13,10 @@ export function useAuth() {
       if (isSupabaseConfigured) {
         try {
           const { data: { session }, error } = await supabase.auth.getSession();
-          if (error) throw error;
+          // Don't treat refresh token errors as fatal
+          if (error && !error.message?.includes("Refresh Token")) {
+            throw error;
+          }
           if (session) {
             console.log("[Auth] Session found:", session.user.email);
             setUser(session.user);
@@ -21,8 +24,11 @@ export function useAuth() {
             setIsLoading(false);
             return;
           }
-        } catch (err) {
-          console.error("[Auth] Session check failed:", err);
+        } catch (err: any) {
+          // Log but don't fail on refresh token errors
+          if (!err?.message?.includes("Refresh Token")) {
+            console.error("[Auth] Session check failed:", err);
+          }
         }
       }
 
@@ -58,13 +64,17 @@ export function useAuth() {
           } else if (!isMock) {
             setUser(null);
           }
-          setIsLoading(false);
+          // Only set loading to false if we have a definitive state
+          if (_event !== "INITIAL_SESSION") {
+            setIsLoading(false);
+          }
         });
-        if (res.data) {
+        if (res?.data?.subscription) {
           subscription = res.data.subscription;
         }
       } catch (err) {
         console.error("[Auth] Auth state change listener failed:", err);
+        setIsLoading(false);
       }
     }
 
@@ -229,24 +239,27 @@ export function useAuth() {
         // Hash the password (simple approach - should use bcrypt in production)
         const passwordHash = btoa(password); // Base64 encoding for now
 
+        // Use upsert instead of insert to avoid 409 conflict if profile exists
         const { error: profileError } = await supabase
           .from("user_profiles")
-          .insert([
+          .upsert(
             {
               id: data.user.id,
               email: email,
               password_hash: passwordHash,
               date_of_birth: dateOfBirth,
-              full_name: fullName
-            }
-          ]);
+              full_name: fullName,
+              updated_at: new Date().toISOString()
+            },
+            { onConflict: "id" }
+          );
 
         if (profileError) {
           console.error("[Auth] Profile save error:", profileError);
-          throw profileError;
+          // Don't throw - user is still created in auth
+        } else {
+          console.log("[Auth] ✅ User profile saved successfully!");
         }
-
-        console.log("[Auth] ✅ User profile saved successfully!");
       } catch (err) {
         console.error("[Auth] Failed to save user profile:", err);
         // Don't throw here - user is created in auth, but profile save failed

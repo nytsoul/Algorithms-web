@@ -93,15 +93,22 @@ function Auth() {
 
       await signUp(signupFormData);
 
-      // After successful signup, show success message
+      // After successful signup, show success message and prepare to login
       setAuthMode("login");
       setError(null);
-      alert("✅ Account created! Check your email for confirmation link, then login. (Note: If email confirmation is disabled in Supabase settings, you can login directly)");
+      // Pre-fill email for login
+      setTimeout(() => {
+        const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
+        if (emailInput) emailInput.value = email;
+      }, 100);
+      alert("✅ Account created successfully! Please login with your credentials. Check your email for confirmation link if email verification is enabled.");
     } catch (err: any) {
       console.error("[Auth] Signup error:", err);
 
       if (err?.message?.includes("already")) {
         setError("Email already registered. Please login.");
+      } else if (err?.message?.includes("400")) {
+        setError("Email format is invalid or account creation failed. Please try again.");
       } else {
         setError(err?.message || "Signup failed. Please try again.");
       }
