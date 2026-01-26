@@ -46,11 +46,14 @@ function Auth() {
       }
 
       await signIn("email-password", formData);
+      // Success - will auto-redirect via useEffect
     } catch (err: any) {
       console.error("[Auth] Login error:", err);
 
-      if (err?.message?.includes("Invalid") || err?.message?.includes("not found")) {
-        setError("❌ Invalid email or password. If you just signed up, please check your email for confirmation link.");
+      if (err?.message?.includes("Invalid login credentials")) {
+        setError("❌ Invalid email or password. If this is a new account, it may still be processing. Try again in a moment.");
+      } else if (err?.message?.includes("Invalid") || err?.message?.includes("not found")) {
+        setError("❌ Account not found. Please sign up first.");
       } else if (err?.message?.includes("Email not confirmed")) {
         setError("❌ Please confirm your email first. Check your inbox for confirmation link.");
       } else {
@@ -93,15 +96,14 @@ function Auth() {
 
       await signUp(signupFormData);
 
-      // After successful signup, show success message and prepare to login
+      // After successful signup, user is already logged in with temporary session
+      // Auto-redirect to dashboard
       setAuthMode("login");
       setError(null);
-      // Pre-fill email for login
+      // Wait a moment then navigate to dashboard
       setTimeout(() => {
-        const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
-        if (emailInput) emailInput.value = email;
-      }, 100);
-      alert("✅ Account created successfully! Please login with your credentials. Check your email for confirmation link if email verification is enabled.");
+        navigate("/dashboard", { replace: true });
+      }, 500);
     } catch (err: any) {
       console.error("[Auth] Signup error:", err);
 

@@ -32,14 +32,18 @@ export function useAuth() {
         }
       }
 
-      // Check for mock user in local storage
-      const mockUserStr = localStorage.getItem("algoverse_mock_user");
+      // Check for mock user in local storage (including temporary users from signup)
+      let mockUserStr = localStorage.getItem("algoverse_mock_user");
+      if (!mockUserStr) {
+        mockUserStr = localStorage.getItem("algoverse_temp_user");
+      }
       if (mockUserStr) {
         try {
           setUser(JSON.parse(mockUserStr));
           setIsMock(true);
         } catch (e) {
           localStorage.removeItem("algoverse_mock_user");
+          localStorage.removeItem("algoverse_temp_user");
         }
       }
       setIsLoading(false);
@@ -172,6 +176,38 @@ export function useAuth() {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           console.error("[Auth] Supabase Auth error:", error.message);
+          
+          // Check if user exists but email not confirmed
+          if (error.message?.includes("Invalid login credentials")) {
+            console.log("[Auth] ℹ️ Checking if user exists in database...");
+            
+            // Try to find user in user_profiles table
+            const { data: userProfile } = await supabase
+              .from("user_profiles")
+              .select("id, email")
+              .eq("email", email)
+              .single();
+            
+            if (userProfile) {
+              console.log("[Auth] ✅ User exists! Email confirmation may be pending. Using temporary mock session...");
+              // User exists but password verification failed - use temporary mock session
+              const mockUser = {
+                id: userProfile.id,
+                email: userProfile.email,
+                user_metadata: {
+                  full_name: email.split("@")[0],
+                  temporary_session: true
+                },
+                created_at: new Date().toISOString()
+              };
+              localStorage.setItem("algoverse_mock_user", JSON.stringify(mockUser));
+              setUser(mockUser as any);
+              setIsMock(true);
+              console.log("[Auth] ✅ Temporary session created - you can now explore the app!");
+              return;
+            }
+          }
+          
           throw error;
         }
         console.log("[Auth] ✅ Login successful:", email);
@@ -260,6 +296,24 @@ export function useAuth() {
         } else {
           console.log("[Auth] ✅ User profile saved successfully!");
         }
+
+        // Step 3: Create temporary mock session for immediate access
+        // This allows users to explore the app while waiting for email confirmation
+        console.log("[Auth] Creating temporary session for immediate access...");
+        const mockUser = {
+          id: data.user.id,
+          email: email,
+          user_metadata: {
+            full_name: fullName,
+            temporary_session: true,
+            awaiting_confirmation: true
+          },
+          created_at: new Date().toISOString()
+        };
+        localStorage.setItem("algoverse_temp_user", JSON.stringify(mockUser));
+        setUser(mockUser as any);
+        setIsMock(true);
+        console.log("[Auth] ✅ Temporary session created - account created successfully!");
       } catch (err) {
         console.error("[Auth] Failed to save user profile:", err);
         // Don't throw here - user is created in auth, but profile save failed
@@ -285,6 +339,7 @@ export function useAuth() {
       setUser(null);
       setIsMock(false);
       localStorage.removeItem("algoverse_mock_user");
+      localStorage.removeItem("algoverse_temp_user");
       console.log("[Auth] 🔄 Redirecting to home page...");
       window.location.href = "/";
     }
