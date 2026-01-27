@@ -79,40 +79,40 @@ export default function Learn() {
       {sidebarOpen && <Sidebar onLogout={handleLogout} isOpen={sidebarOpen} />}
 
       {/* Main Content */}
-      <div className={`flex-1 ${sidebarOpen ? "ml-80" : ""} flex flex-col transition-all duration-300`}>
+      <div className={`flex-1 ${sidebarOpen ? "lg:ml-80 md:ml-72 sm:ml-64" : "ml-0"} flex flex-col transition-all duration-300`}>
         <div className="fixed inset-0 cyber-grid pointer-events-none" />
         <div className="scanline fixed inset-0 pointer-events-none" />
 
         {/* Header */}
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-        <main className="relative z-10 w-full px-6 py-12 space-y-24">
+        <main className="relative z-10 w-full px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12 space-y-12 sm:space-y-16 md:space-y-24">
           {/* Hero Section */}
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-3xl mx-auto">
-            <Badge className="mb-4 bg-[var(--neon-cyan)]/10 text-[var(--neon-cyan)] border-[var(--neon-cyan)]/20 px-4 py-1">
+            <Badge className="mb-3 sm:mb-4 bg-[var(--neon-cyan)]/10 text-[var(--neon-cyan)] border-[var(--neon-cyan)]/20 px-3 sm:px-4 py-1 text-xs sm:text-sm">
               {t('learn.hero_badge')}
             </Badge>
-            <h1 className="text-6xl font-bold mb-6 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 tracking-tight">
               {t('learn.hero_title').split(' ').slice(0, 2).join(' ')} <br />
               <span className="bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-purple)] to-[var(--neon-pink)] bg-clip-text text-transparent">{t('learn.hero_title').split(' ').slice(2).join(' ')}</span>
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed">
               {t('learn.hero_subtitle')}
             </p>
           </motion.div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {[
               { label: t('learn.stats.paths'), value: Object.keys(enrolledPaths).length.toString(), icon: BookOpen, color: "var(--neon-cyan)" },
               { label: t('learn.stats.mastered'), value: "47", icon: Target, color: "var(--neon-pink)" },
               { label: t('learn.stats.progress'), value: "42%", icon: TrendingUp, color: "var(--neon-green)" },
               { label: t('learn.stats.streak'), value: `${streak} ${t('learn.stats.streak').split(' ')[1]}`, icon: Calendar, color: "var(--neon-yellow)" },
             ].map((stat) => (
-              <Card key={stat.label} className="cyber-card p-6 bg-card/40 backdrop-blur-sm border-border/50 hover:border-[var(--neon-cyan)]/30 transition-all">
-                <stat.icon className="w-6 h-6 mb-4" style={{ color: stat.color }} />
-                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
-                <p className="text-3xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
+              <Card key={stat.label} className="cyber-card p-3 sm:p-4 md:p-6 bg-card/40 backdrop-blur-sm border-border/50 hover:border-[var(--neon-cyan)]/30 transition-all">
+                <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mb-2 sm:mb-3 md:mb-4" style={{ color: stat.color }} />
+                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
               </Card>
             ))}
           </div>

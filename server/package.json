@@ -1,5 +1,5 @@
 {
-  "name": "AlgoTime",
+  "name": "algotime",
   "version": "1.0.0",
   "description": "Backend API for Algo Nexus Prime",
   "main": "dist/server.js",

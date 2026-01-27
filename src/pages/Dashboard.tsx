@@ -88,14 +88,14 @@ export default function Dashboard() {
             <Sidebar onLogout={handleLogout} isOpen={sidebarOpen} />
 
             {/* Main Content */}
-            <div className={`flex-1 ${sidebarOpen ? "ml-80" : ""} flex flex-col transition-all duration-300`}>
+            <div className={`flex-1 ${sidebarOpen ? "lg:ml-80 md:ml-72 sm:ml-64" : "ml-0"} flex flex-col transition-all duration-300`}>
                 <div className="fixed inset-0 cyber-grid pointer-events-none" />
                 <div className="scanline fixed inset-0 pointer-events-none" />
 
                 {/* Header */}
                 <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
                 {/* Main Content */}
-                <main className="relative z-10 w-full px-6 py-12">
+                <main className="relative z-10 w-full px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12">
                     {/* Hero Section */}
                     <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
                         <h1 className="text-5xl font-bold mb-4">
