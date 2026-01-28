@@ -39,6 +39,10 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import { Settings2, Plus, Minus, Wand2, Hash } from "lucide-react";
+import AlgorithmInfoPanel from '@/components/AlgorithmInfoPanel';
+import ComplexityBreakdown from '@/components/ComplexityBreakdown';
+import { generateComprehensiveDetails } from '@/lib/comprehensive-algorithm-details';
+
 
 interface ConfigurationPanelProps {
     algorithm: any;
@@ -209,6 +213,10 @@ export default function Visualize() {
     // Visualizer data state
     const [visualizerArray, setVisualizerArray] = useState<number[]>([64, 34, 25, 12, 22, 11, 90, 45, 78, 33]);
     const [visualizerTarget, setVisualizerTarget] = useState<number>(22);
+    const [showAlgorithmInfo, setShowAlgorithmInfo] = useState(true);
+
+    // Generate comprehensive details for current algorithm
+    const comprehensiveDetails = algorithm ? generateComprehensiveDetails(algorithm as any) : null;
 
     useEffect(() => {
         if (algoSlug) {
@@ -406,33 +414,30 @@ export default function Visualize() {
                                     <div className="flex border-b border-gray-200 dark:border-gray-700 mb-8">
                                         <button
                                             onClick={() => setActiveTab('visualization')}
-                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${
-                                                activeTab === 'visualization'
-                                                    ? 'border-[var(--neon-cyan)] text-[var(--neon-cyan)]'
-                                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                                            }`}
+                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${activeTab === 'visualization'
+                                                ? 'border-[var(--neon-cyan)] text-[var(--neon-cyan)]'
+                                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                                }`}
                                         >
                                             <Play size={20} className="inline mr-2" />
                                             VISUALIZATION
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('implementation')}
-                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${
-                                                activeTab === 'implementation'
-                                                    ? 'border-[var(--neon-purple)] text-[var(--neon-purple)]'
-                                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                                            }`}
+                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${activeTab === 'implementation'
+                                                ? 'border-[var(--neon-purple)] text-[var(--neon-purple)]'
+                                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                                }`}
                                         >
                                             <Code2 size={20} className="inline mr-2" />
                                             IMPLEMENTATIONS
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('quiz')}
-                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${
-                                                activeTab === 'quiz'
-                                                    ? 'border-[var(--neon-green)] text-[var(--neon-green)]'
-                                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                                            }`}
+                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${activeTab === 'quiz'
+                                                ? 'border-[var(--neon-green)] text-[var(--neon-green)]'
+                                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                                }`}
                                         >
                                             <Brain size={20} className="inline mr-2" />
                                             QUIZ & CHALLENGES
@@ -446,321 +451,321 @@ export default function Visualize() {
                                         {/* Main Visualization Area */}
                                         <div className="max-w-6xl mx-auto space-y-12">
                                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                                        {/* Visualizer Column */}
-                                        <div className="lg:col-span-8 space-y-6">
-                                            <div className="relative group">
-                                                <div className="absolute -inset-1 bg-gradient-to-r from-[var(--neon-cyan)]/20 to-[var(--neon-purple)]/20 rounded-3xl blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
+                                                {/* Visualizer Column */}
+                                                <div className="lg:col-span-8 space-y-6">
+                                                    <div className="relative group">
+                                                        <div className="absolute -inset-1 bg-gradient-to-r from-[var(--neon-cyan)]/20 to-[var(--neon-purple)]/20 rounded-3xl blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
 
-                                                <div className="relative dark:bg-[#0a0a0c]/40 dark:backdrop-blur-3xl dark:border dark:border-white/5 bg-white/40 backdrop-blur-3xl border border-gray-300/40 rounded-3xl p-6 md:p-10 shadow-3xl overflow-hidden min-h-[500px] flex items-center justify-center">
-                                                    <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+                                                        <div className="relative dark:bg-[#0a0a0c]/40 dark:backdrop-blur-3xl dark:border dark:border-white/5 bg-white/40 backdrop-blur-3xl border border-gray-300/40 rounded-3xl p-6 md:p-10 shadow-3xl overflow-hidden min-h-[500px] flex items-center justify-center">
+                                                            <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
 
-                                                    <div className="w-full">
-                                                        <AlgorithmVisualizer
-                                                            type={algorithm.slug as AlgorithmType}
-                                                            array={visualizerArray}
-                                                            target={visualizerTarget}
-                                                            hideHeader={true}
-                                                            code={algorithm.implementations?.javascript || algorithm.pseudocode}
-                                                        />
+                                                            <div className="w-full">
+                                                                <AlgorithmVisualizer
+                                                                    type={algorithm.slug as AlgorithmType}
+                                                                    array={visualizerArray}
+                                                                    target={visualizerTarget}
+                                                                    hideHeader={true}
+                                                                    code={algorithm.implementations?.javascript || algorithm.pseudocode}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Configuration Panel Column */}
+                                                <div className="lg:col-span-4 sticky top-24">
+                                                    <ConfigurationPanel
+                                                        algorithm={algorithm}
+                                                        visualizerArray={visualizerArray}
+                                                        setVisualizerArray={setVisualizerArray}
+                                                        visualizerTarget={visualizerTarget}
+                                                        setVisualizerTarget={setVisualizerTarget}
+                                                    />
+
+                                                    {/* Action Toggles */}
+                                                    <div className="grid grid-cols-2 gap-3 mt-6">
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => setShowComplexity(!showComplexity)}
+                                                            className={`h-12 rounded-xl transition-all ${showComplexity ? 'dark:bg-[var(--neon-green)]/10 dark:border-[var(--neon-green)]/30 dark:text-[var(--neon-green)] bg-[var(--neon-green)]/20 border-[var(--neon-green)]/40 text-[var(--neon-green)]' : 'dark:border-white/5 dark:text-white/40 dark:hover:bg-white/5 border-gray-400 text-gray-700 hover:bg-gray-300/40'}`}
+                                                        >
+                                                            <Activity className="w-4 h-4 mr-2" />
+                                                            Analysis
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => setShowComparison(!showComparison)}
+                                                            className={`h-12 rounded-xl transition-all ${showComparison ? 'dark:bg-[var(--neon-purple)]/10 dark:border-[var(--neon-purple)]/30 dark:text-[var(--neon-purple)] bg-[var(--neon-purple)]/20 border-[var(--neon-purple)]/40 text-[var(--neon-purple)]' : 'dark:border-white/5 dark:text-white/40 dark:hover:bg-white/5 border-gray-400 text-gray-700 hover:bg-gray-300/40'}`}
+                                                        >
+                                                            <Zap className="w-4 h-4 mr-2" />
+                                                            Related
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Configuration Panel Column */}
-                                        <div className="lg:col-span-4 sticky top-24">
-                                            <ConfigurationPanel
-                                                algorithm={algorithm}
-                                                visualizerArray={visualizerArray}
-                                                setVisualizerArray={setVisualizerArray}
-                                                visualizerTarget={visualizerTarget}
-                                                setVisualizerTarget={setVisualizerTarget}
-                                            />
-
-                                            {/* Action Toggles */}
-                                            <div className="grid grid-cols-2 gap-3 mt-6">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => setShowComplexity(!showComplexity)}
-                                                    className={`h-12 rounded-xl transition-all ${showComplexity ? 'dark:bg-[var(--neon-green)]/10 dark:border-[var(--neon-green)]/30 dark:text-[var(--neon-green)] bg-[var(--neon-green)]/20 border-[var(--neon-green)]/40 text-[var(--neon-green)]' : 'dark:border-white/5 dark:text-white/40 dark:hover:bg-white/5 border-gray-400 text-gray-700 hover:bg-gray-300/40'}`}
-                                                >
-                                                    <Activity className="w-4 h-4 mr-2" />
-                                                    Analysis
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => setShowComparison(!showComparison)}
-                                                    className={`h-12 rounded-xl transition-all ${showComparison ? 'dark:bg-[var(--neon-purple)]/10 dark:border-[var(--neon-purple)]/30 dark:text-[var(--neon-purple)] bg-[var(--neon-purple)]/20 border-[var(--neon-purple)]/40 text-[var(--neon-purple)]' : 'dark:border-white/5 dark:text-white/40 dark:hover:bg-white/5 border-gray-400 text-gray-700 hover:bg-gray-300/40'}`}
-                                                >
-                                                    <Zap className="w-4 h-4 mr-2" />
-                                                    Related
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Complexity Analysis */}
-                                {showComplexity && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="space-y-4"
-                                    >
-                                        <h3 className="text-lg font-bold flex items-center gap-2">
-                                            <Clock className="w-5 h-5 text-[var(--neon-cyan)]" />
-                                            Complexity Analysis
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                                                    Time Complexity
-                                                </p>
-                                                <p className="text-lg font-bold text-[var(--neon-cyan)] font-mono">
-                                                    {algorithm.timeComplexity?.average || "O(n)"}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground mt-2">
-                                                    Average Case
-                                                </p>
-                                            </Card>
-                                            <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                                                    Space Complexity
-                                                </p>
-                                                <p className="text-2xl font-bold text-[var(--neon-pink)] font-mono">
-                                                    {algorithm.spaceComplexity}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground mt-2">
-                                                    Auxiliary Space
-                                                </p>
-                                            </Card>
-                                            <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                                                <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                                                    Category
-                                                </p>
-                                                <p className="text-2xl font-bold text-[var(--neon-green)]">
-                                                    {algorithm.category}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground mt-2">
-                                                    {algorithm.difficulty}
-                                                </p>
-                                            </Card>
-                                        </div>
-
-                                        {/* Complexity Growth Chart */}
-                                        <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                                            <h4 className="font-bold mb-4">Performance Growth Pattern</h4>
-                                            <ResponsiveContainer width="100%" height={250}>
-                                                <LineChart
-                                                    data={[
-                                                        { size: "10", bestY: 10, avgY: 23, worstY: 100 },
-                                                        { size: "100", bestY: 100, avgY: 230, worstY: 10000 },
-                                                        {
-                                                            size: "1000",
-                                                            bestY: 1000,
-                                                            avgY: 2300,
-                                                            worstY: 1000000,
-                                                        },
-                                                        {
-                                                            size: "10000",
-                                                            bestY: 10000,
-                                                            avgY: 23000,
-                                                            worstY: 100000000,
-                                                        },
-                                                    ]}
-                                                >
-                                                    <CartesianGrid
-                                                        strokeDasharray="3 3"
-                                                        stroke="var(--border)"
-                                                    />
-                                                    <XAxis dataKey="size" stroke="var(--foreground)" />
-                                                    <YAxis stroke="var(--foreground)" scale="log" />
-                                                    <Tooltip
-                                                        contentStyle={{
-                                                            backgroundColor: "var(--card)",
-                                                            border: "1px solid var(--border)",
-                                                        }}
-                                                    />
-                                                    <Legend />
-                                                    <Line
-                                                        type="monotone"
-                                                        dataKey="bestY"
-                                                        stroke="var(--neon-green)"
-                                                        strokeWidth={2}
-                                                        name="Best Case"
-                                                    />
-                                                    <Line
-                                                        type="monotone"
-                                                        dataKey="avgY"
-                                                        stroke="var(--neon-cyan)"
-                                                        strokeWidth={2}
-                                                        name="Average Case"
-                                                    />
-                                                    <Line
-                                                        type="monotone"
-                                                        dataKey="worstY"
-                                                        stroke="var(--neon-pink)"
-                                                        strokeWidth={2}
-                                                        name="Worst Case"
-                                                    />
-                                                </LineChart>
-                                            </ResponsiveContainer>
-                                        </Card>
-                                    </motion.div>
-                                )}
-
-                                {/* Algorithm Comparison */}
-                                {showComparison && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="space-y-4"
-                                    >
-                                        <h3 className="text-lg font-bold flex items-center gap-2">
-                                            <Zap className="w-5 h-5 text-[var(--neon-purple)]" />
-                                            Related Algorithms
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {allAlgorithms
-                                                .filter(
-                                                    (a) =>
-                                                        a.category === algorithm.category &&
-                                                        a.slug !== algorithm.slug
-                                                )
-                                                .slice(0, 4)
-                                                .map((algo) => (
-                                                    <Card
-                                                        key={algo.slug}
-                                                        onClick={() =>
-                                                            setSearchParams({ algo: algo.slug })
-                                                        }
-                                                        className="cyber-card p-4 bg-card/50 backdrop-blur-sm border-border/50 cursor-pointer hover:border-[var(--neon-cyan)] transition-all group"
-                                                    >
-                                                        <div className="flex items-start justify-between mb-3">
-                                                            <div className="flex-1">
-                                                                <p className="font-bold text-[var(--neon-cyan)] group-hover:text-[var(--neon-green)] transition-colors">
-                                                                    {algo.name}
-                                                                </p>
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {algo.category}
-                                                                </p>
-                                                            </div>
-                                                            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                                                        </div>
-                                                        <div className="flex gap-2 flex-wrap">
-                                                            <Badge variant="secondary" className="text-xs">
-                                                                Time: {algo.timeComplexity?.average}
-                                                            </Badge>
-                                                            <Badge variant="secondary" className="text-xs">
-                                                                Space: {algo.spaceComplexity}
-                                                            </Badge>
-                                                        </div>
+                                        {/* Complexity Analysis */}
+                                        {showComplexity && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="space-y-4"
+                                            >
+                                                <h3 className="text-lg font-bold flex items-center gap-2">
+                                                    <Clock className="w-5 h-5 text-[var(--neon-cyan)]" />
+                                                    Complexity Analysis
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
+                                                        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                                                            Time Complexity
+                                                        </p>
+                                                        <p className="text-lg font-bold text-[var(--neon-cyan)] font-mono">
+                                                            {algorithm.timeComplexity?.average || "O(n)"}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mt-2">
+                                                            Average Case
+                                                        </p>
                                                     </Card>
-                                                ))}
-                                        </div>
+                                                    <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
+                                                        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                                                            Space Complexity
+                                                        </p>
+                                                        <p className="text-2xl font-bold text-[var(--neon-pink)] font-mono">
+                                                            {algorithm.spaceComplexity}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mt-2">
+                                                            Auxiliary Space
+                                                        </p>
+                                                    </Card>
+                                                    <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
+                                                        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                                                            Category
+                                                        </p>
+                                                        <p className="text-2xl font-bold text-[var(--neon-green)]">
+                                                            {algorithm.category}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground mt-2">
+                                                            {algorithm.difficulty}
+                                                        </p>
+                                                    </Card>
+                                                </div>
 
-                                        {/* Comparison Table */}
-                                        <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                                            <h4 className="font-bold mb-4">Algorithm Comparison</h4>
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-sm">
-                                                    <thead className="border-b border-border/50">
-                                                        <tr>
-                                                            <th className="text-left py-2 px-3 text-[var(--neon-cyan)]">
-                                                                Algorithm
-                                                            </th>
-                                                            <th className="text-left py-2 px-3 text-[var(--neon-pink)]">
-                                                                Time (Avg)
-                                                            </th>
-                                                            <th className="text-left py-2 px-3 text-[var(--neon-green)]">
-                                                                Space
-                                                            </th>
-                                                            <th className="text-left py-2 px-3 text-[var(--neon-purple)]">
-                                                                Difficulty
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr className="border-b border-border/20 bg-[var(--neon-cyan)]/5">
-                                                            <td className="py-2 px-3 font-bold text-[var(--neon-cyan)]">
-                                                                {algorithm.name}
-                                                            </td>
-                                                            <td className="py-2 px-3 font-mono">
-                                                                {algorithm.timeComplexity?.average}
-                                                            </td>
-                                                            <td className="py-2 px-3 font-mono">
-                                                                {algorithm.spaceComplexity}
-                                                            </td>
-                                                            <td className="py-2 px-3">{algorithm.difficulty}</td>
-                                                        </tr>
-                                                        {allAlgorithms
-                                                            .filter(
-                                                                (a) =>
-                                                                    a.category === algorithm.category &&
-                                                                    a.slug !== algorithm.slug
-                                                            )
-                                                            .slice(0, 3)
-                                                            .map((algo) => (
-                                                                <tr
-                                                                    key={algo.slug}
-                                                                    className="border-b border-border/20 hover:bg-background/50 transition"
-                                                                >
-                                                                    <td className="py-2 px-3">{algo.name}</td>
-                                                                    <td className="py-2 px-3 font-mono text-muted-foreground">
-                                                                        {algo.timeComplexity?.average}
-                                                                    </td>
-                                                                    <td className="py-2 px-3 font-mono text-muted-foreground">
-                                                                        {algo.spaceComplexity}
-                                                                    </td>
-                                                                    <td className="py-2 px-3">
-                                                                        {algo.difficulty}
-                                                                    </td>
+                                                {/* Complexity Growth Chart */}
+                                                <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
+                                                    <h4 className="font-bold mb-4">Performance Growth Pattern</h4>
+                                                    <ResponsiveContainer width="100%" height={250}>
+                                                        <LineChart
+                                                            data={[
+                                                                { size: "10", bestY: 10, avgY: 23, worstY: 100 },
+                                                                { size: "100", bestY: 100, avgY: 230, worstY: 10000 },
+                                                                {
+                                                                    size: "1000",
+                                                                    bestY: 1000,
+                                                                    avgY: 2300,
+                                                                    worstY: 1000000,
+                                                                },
+                                                                {
+                                                                    size: "10000",
+                                                                    bestY: 10000,
+                                                                    avgY: 23000,
+                                                                    worstY: 100000000,
+                                                                },
+                                                            ]}
+                                                        >
+                                                            <CartesianGrid
+                                                                strokeDasharray="3 3"
+                                                                stroke="var(--border)"
+                                                            />
+                                                            <XAxis dataKey="size" stroke="var(--foreground)" />
+                                                            <YAxis stroke="var(--foreground)" scale="log" />
+                                                            <Tooltip
+                                                                contentStyle={{
+                                                                    backgroundColor: "var(--card)",
+                                                                    border: "1px solid var(--border)",
+                                                                }}
+                                                            />
+                                                            <Legend />
+                                                            <Line
+                                                                type="monotone"
+                                                                dataKey="bestY"
+                                                                stroke="var(--neon-green)"
+                                                                strokeWidth={2}
+                                                                name="Best Case"
+                                                            />
+                                                            <Line
+                                                                type="monotone"
+                                                                dataKey="avgY"
+                                                                stroke="var(--neon-cyan)"
+                                                                strokeWidth={2}
+                                                                name="Average Case"
+                                                            />
+                                                            <Line
+                                                                type="monotone"
+                                                                dataKey="worstY"
+                                                                stroke="var(--neon-pink)"
+                                                                strokeWidth={2}
+                                                                name="Worst Case"
+                                                            />
+                                                        </LineChart>
+                                                    </ResponsiveContainer>
+                                                </Card>
+                                            </motion.div>
+                                        )}
+
+                                        {/* Algorithm Comparison */}
+                                        {showComparison && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="space-y-4"
+                                            >
+                                                <h3 className="text-lg font-bold flex items-center gap-2">
+                                                    <Zap className="w-5 h-5 text-[var(--neon-purple)]" />
+                                                    Related Algorithms
+                                                </h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {allAlgorithms
+                                                        .filter(
+                                                            (a) =>
+                                                                a.category === algorithm.category &&
+                                                                a.slug !== algorithm.slug
+                                                        )
+                                                        .slice(0, 4)
+                                                        .map((algo) => (
+                                                            <Card
+                                                                key={algo.slug}
+                                                                onClick={() =>
+                                                                    setSearchParams({ algo: algo.slug })
+                                                                }
+                                                                className="cyber-card p-4 bg-card/50 backdrop-blur-sm border-border/50 cursor-pointer hover:border-[var(--neon-cyan)] transition-all group"
+                                                            >
+                                                                <div className="flex items-start justify-between mb-3">
+                                                                    <div className="flex-1">
+                                                                        <p className="font-bold text-[var(--neon-cyan)] group-hover:text-[var(--neon-green)] transition-colors">
+                                                                            {algo.name}
+                                                                        </p>
+                                                                        <p className="text-xs text-muted-foreground">
+                                                                            {algo.category}
+                                                                        </p>
+                                                                    </div>
+                                                                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                                                                </div>
+                                                                <div className="flex gap-2 flex-wrap">
+                                                                    <Badge variant="secondary" className="text-xs">
+                                                                        Time: {algo.timeComplexity?.average}
+                                                                    </Badge>
+                                                                    <Badge variant="secondary" className="text-xs">
+                                                                        Space: {algo.spaceComplexity}
+                                                                    </Badge>
+                                                                </div>
+                                                            </Card>
+                                                        ))}
+                                                </div>
+
+                                                {/* Comparison Table */}
+                                                <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
+                                                    <h4 className="font-bold mb-4">Algorithm Comparison</h4>
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full text-sm">
+                                                            <thead className="border-b border-border/50">
+                                                                <tr>
+                                                                    <th className="text-left py-2 px-3 text-[var(--neon-cyan)]">
+                                                                        Algorithm
+                                                                    </th>
+                                                                    <th className="text-left py-2 px-3 text-[var(--neon-pink)]">
+                                                                        Time (Avg)
+                                                                    </th>
+                                                                    <th className="text-left py-2 px-3 text-[var(--neon-green)]">
+                                                                        Space
+                                                                    </th>
+                                                                    <th className="text-left py-2 px-3 text-[var(--neon-purple)]">
+                                                                        Difficulty
+                                                                    </th>
                                                                 </tr>
-                                                            ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </Card>
-                                    </motion.div>
-                                )}
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr className="border-b border-border/20 bg-[var(--neon-cyan)]/5">
+                                                                    <td className="py-2 px-3 font-bold text-[var(--neon-cyan)]">
+                                                                        {algorithm.name}
+                                                                    </td>
+                                                                    <td className="py-2 px-3 font-mono">
+                                                                        {algorithm.timeComplexity?.average}
+                                                                    </td>
+                                                                    <td className="py-2 px-3 font-mono">
+                                                                        {algorithm.spaceComplexity}
+                                                                    </td>
+                                                                    <td className="py-2 px-3">{algorithm.difficulty}</td>
+                                                                </tr>
+                                                                {allAlgorithms
+                                                                    .filter(
+                                                                        (a) =>
+                                                                            a.category === algorithm.category &&
+                                                                            a.slug !== algorithm.slug
+                                                                    )
+                                                                    .slice(0, 3)
+                                                                    .map((algo) => (
+                                                                        <tr
+                                                                            key={algo.slug}
+                                                                            className="border-b border-border/20 hover:bg-background/50 transition"
+                                                                        >
+                                                                            <td className="py-2 px-3">{algo.name}</td>
+                                                                            <td className="py-2 px-3 font-mono text-muted-foreground">
+                                                                                {algo.timeComplexity?.average}
+                                                                            </td>
+                                                                            <td className="py-2 px-3 font-mono text-muted-foreground">
+                                                                                {algo.spaceComplexity}
+                                                                            </td>
+                                                                            <td className="py-2 px-3">
+                                                                                {algo.difficulty}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </Card>
+                                            </motion.div>
+                                        )}
 
-                                {/* Algorithm Details & Use Cases */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                                >
-                                    <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                                            <BookOpen className="w-5 h-5 text-[var(--neon-green)]" />
-                                            Description
-                                        </h3>
-                                        <p className="text-sm leading-relaxed text-muted-foreground">
-                                            {algorithm.description}
-                                        </p>
-                                    </Card>
+                                        {/* Algorithm Details & Use Cases */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                        >
+                                            <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
+                                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                                                    <BookOpen className="w-5 h-5 text-[var(--neon-green)]" />
+                                                    Description
+                                                </h3>
+                                                <p className="text-sm leading-relaxed text-muted-foreground">
+                                                    {algorithm.description}
+                                                </p>
+                                            </Card>
 
-                                    <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
-                                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                                            <Zap className="w-5 h-5 text-[var(--neon-yellow)]" />
-                                            Use Cases
-                                        </h3>
-                                        <ul className="text-sm space-y-2">
-                                            {(algorithm.applications || [])
-                                                .slice(0, 3)
-                                                .map((useCase: string, idx: number) => (
-                                                    <li key={idx} className="flex items-start gap-2">
-                                                        <span className="text-[var(--neon-cyan)] font-bold">
-                                                            •
-                                                        </span>
-                                                        <span className="text-muted-foreground">
-                                                            {useCase}
-                                                        </span>
-                                                    </li>
-                                                ))}
-                                        </ul>
-                                    </Card>
-                                </motion.div>
+                                            <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
+                                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                                                    <Zap className="w-5 h-5 text-[var(--neon-yellow)]" />
+                                                    Use Cases
+                                                </h3>
+                                                <ul className="text-sm space-y-2">
+                                                    {(algorithm.applications || [])
+                                                        .slice(0, 3)
+                                                        .map((useCase: string, idx: number) => (
+                                                            <li key={idx} className="flex items-start gap-2">
+                                                                <span className="text-[var(--neon-cyan)] font-bold">
+                                                                    •
+                                                                </span>
+                                                                <span className="text-muted-foreground">
+                                                                    {useCase}
+                                                                </span>
+                                                            </li>
+                                                        ))}
+                                                </ul>
+                                            </Card>
+                                        </motion.div>
                                     </>
                                 )}
 
@@ -771,8 +776,8 @@ export default function Visualize() {
                                         animate={{ opacity: 1, y: 0 }}
                                         className="max-w-6xl mx-auto"
                                     >
-                                        <ImplementationSelector 
-                                            algorithm={algorithm.slug} 
+                                        <ImplementationSelector
+                                            algorithm={algorithm.slug}
                                             className="mb-8"
                                         />
                                     </motion.div>
@@ -785,7 +790,7 @@ export default function Visualize() {
                                         animate={{ opacity: 1, y: 0 }}
                                         className="max-w-6xl mx-auto"
                                     >
-                                        <QuizModule 
+                                        <QuizModule
                                             algorithm={algorithm.slug}
                                             mode="both"
                                         />
