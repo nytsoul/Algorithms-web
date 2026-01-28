@@ -539,16 +539,64 @@
     background-color: hsl(var(--border) / 0.8);
   }
 
-  /* Touch-friendly mobile interactions */
-  @media (hover: none) and (pointer: coarse) {
-    button, a {
-      min-height: 44px;
-      min-width: 44px;
-    }
+  /* Enhanced Light Mode Visualization Utilities */
+  .visualization-panel-light {
+    @apply bg-white/60 backdrop-blur-xl border border-gray-300/50 shadow-lg;
+  }
 
-    /* Larger tap targets */
-    .cyber-card, .card {
-      padding: 1rem;
-    }
+  .visualization-control-light {
+    @apply bg-gray-300/40 border border-gray-400 text-gray-800 hover:bg-gray-300/60 hover:text-gray-900;
+  }
+
+  .visualization-input-light {
+    @apply bg-white/70 border border-gray-400 text-gray-900 placeholder-gray-600;
+  }
+
+  .visualization-button-light {
+    @apply bg-white/50 border border-gray-400 text-gray-800 hover:bg-white/80 hover:border-gray-600;
+  }
+
+  .visualization-card-light {
+    @apply bg-white/40 border border-gray-300/60 backdrop-blur-lg;
+  }
+
+  .visualization-text-light {
+    @apply text-gray-900;
+  }
+
+  .visualization-text-muted-light {
+    @apply text-gray-600;
+  }
+
+  /* Enhanced neon effects for light mode */
+  .neon-border-light {
+    box-shadow: 0 0 20px rgba(var(--neon-cyan-rgb), 0.3);
+    border: 2px solid var(--neon-cyan);
+  }
+
+  /* Custom scrollbar for light mode */
+  .scrollbar-light {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.5) transparent;
+  }
+
+  .scrollbar-light::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-light::-webkit-scrollbar-track {
+    background: rgba(243, 244, 246, 0.5);
+    border-radius: 4px;
+  }
+
+  .scrollbar-light::-webkit-scrollbar-thumb {
+    background-color: rgba(107, 114, 128, 0.5);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .scrollbar-light::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107, 114, 128, 0.8);
   }
 }

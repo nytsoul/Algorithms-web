@@ -9,6 +9,9 @@ import {
     Clock,
     Activity,
     BookOpen,
+    Code2,
+    Brain,
+    Play,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +24,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
+import ImplementationSelector from "@/components/ImplementationSelector";
+import QuizModule from "@/components/QuizModule";
 import {
     LineChart,
     Line,
@@ -59,45 +64,45 @@ function ConfigurationPanel({
         <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="group/panel bg-[#0a0a0c]/80 backdrop-blur-3xl border border-white/5 rounded-2xl p-6 shadow-2xl space-y-8 relative overflow-hidden"
+            className="group/panel dark:bg-[#0a0a0c]/80 dark:backdrop-blur-3xl dark:border dark:border-white/5 bg-white/60 backdrop-blur-3xl border border-gray-300/50 rounded-2xl p-6 shadow-2xl space-y-8 relative overflow-hidden"
         >
             {/* Animated Background Glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-[var(--neon-cyan)]/5 rounded-full blur-3xl group-hover/panel:bg-[var(--neon-cyan)]/10 transition-colors duration-1000" />
+            <div className="absolute -top-24 -right-24 w-48 h-48 dark:bg-[var(--neon-cyan)]/5 bg-[var(--neon-cyan)]/10 rounded-full blur-3xl dark:group-hover/panel:bg-[var(--neon-cyan)]/10 group-hover/panel:bg-[var(--neon-cyan)]/15 transition-colors duration-1000" />
 
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4 relative z-10">
+            <div className="flex items-center gap-3 dark:border-white/5 border-gray-400/30 border-b pb-4 relative z-10">
                 <motion.div
                     whileHover={{ rotate: 90 }}
                     transition={{ type: "spring", stiffness: 200 }}
-                    className="p-2 bg-[var(--neon-cyan)]/10 rounded-lg"
+                    className="p-2 dark:bg-[var(--neon-cyan)]/10 bg-[var(--neon-cyan)]/20 rounded-lg"
                 >
                     <Settings2 className="w-5 h-5 text-[var(--neon-cyan)]" />
                 </motion.div>
                 <div>
-                    <h3 className="text-lg font-bold">Configuration</h3>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Parameters</p>
+                    <h3 className="text-lg font-bold dark:text-white text-gray-900">Configuration</h3>
+                    <p className="text-[10px] dark:text-muted-foreground text-gray-600 uppercase tracking-[0.2em] font-bold">Parameters</p>
                 </div>
             </div>
 
             {/* Array Controls */}
             <div className="space-y-4 relative z-10">
                 <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest">Input Dataset</label>
+                    <label className="text-[11px] font-bold dark:text-white/40 text-gray-700 uppercase tracking-widest">Input Dataset</label>
                     <div className="flex gap-2">
                         <Button
                             variant="outline"
                             size="icon"
                             disabled={visualizerArray.length <= 3}
                             onClick={() => setVisualizerArray(visualizerArray.slice(0, -1))}
-                            className="w-8 h-8 rounded-lg border-white/5 hover:border-red-500/50 hover:bg-red-500/10 transition-all"
+                            className="w-8 h-8 rounded-lg dark:border-white/5 dark:hover:border-red-500/50 dark:hover:bg-red-500/10 border-gray-400 hover:border-red-500 hover:bg-red-500/15 transition-all"
                         >
-                            <Minus className="w-3 h-3 text-red-400" />
+                            <Minus className="w-3 h-3 dark:text-red-400 text-red-500" />
                         </Button>
                         <Button
                             variant="outline"
                             size="icon"
                             disabled={visualizerArray.length >= 15}
                             onClick={() => setVisualizerArray([...visualizerArray, Math.floor(Math.random() * 90) + 10])}
-                            className="w-8 h-8 rounded-lg border-white/5 hover:border-[var(--neon-green)]/50 hover:bg-[var(--neon-green)]/10 transition-all"
+                            className="w-8 h-8 rounded-lg dark:border-white/5 dark:hover:border-[var(--neon-green)]/50 dark:hover:bg-[var(--neon-green)]/10 border-gray-400 hover:border-[var(--neon-green)] hover:bg-[var(--neon-green)]/15 transition-all"
                         >
                             <Plus className="w-3 h-3 text-[var(--neon-green)]" />
                         </Button>
@@ -122,7 +127,7 @@ function ConfigurationPanel({
                                         newArray[idx] = parseInt(e.target.value) || 0;
                                         setVisualizerArray(newArray);
                                     }}
-                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-1 py-3 text-white text-center font-mono text-sm focus:bg-white/10 focus:border-[var(--neon-cyan)]/50 focus:outline-none transition-all"
+                                    className="w-full dark:bg-white/5 dark:border dark:border-white/10 dark:text-white bg-gray-300/50 border border-gray-400 text-gray-900 rounded-lg px-1 py-3 text-center font-mono text-sm dark:focus:bg-white/10 dark:focus:border-[var(--neon-cyan)]/50 focus:bg-white/70 focus:border-[var(--neon-cyan)] focus:outline-none transition-all"
                                 />
                                 <div className="absolute inset-0 rounded-lg border border-[var(--neon-cyan)] opacity-0 group-focus-within/input:opacity-50 blur-[2px] transition-opacity pointer-events-none" />
                             </motion.div>
@@ -133,8 +138,8 @@ function ConfigurationPanel({
 
             {/* Target Control */}
             {isSearching && (
-                <div className="space-y-4 pt-6 border-t border-white/5 relative z-10">
-                    <label className="text-[11px] font-bold text-white/40 uppercase tracking-widest block">Search Target</label>
+                <div className="space-y-4 pt-6 dark:border-white/5 border-gray-400/30 border-t relative z-10">
+                    <label className="text-[11px] font-bold dark:text-white/40 text-gray-700 uppercase tracking-widest block">Search Target</label>
                     <div className="relative group/target">
                         <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--neon-purple)]/50 to-transparent rounded-xl opacity-0 group-focus-within/target:opacity-100 blur transition-opacity" />
                         <div className="relative">
@@ -142,7 +147,7 @@ function ConfigurationPanel({
                                 type="number"
                                 value={visualizerTarget}
                                 onChange={(e) => setVisualizerTarget(parseInt(e.target.value) || 0)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-12 py-4 text-white font-mono text-xl focus:border-[var(--neon-purple)] focus:outline-none transition-all"
+                                className="w-full dark:bg-black/40 dark:border dark:border-white/10 dark:text-white bg-white/70 border border-gray-400 text-gray-900 rounded-xl px-12 py-4 font-mono text-xl dark:focus:border-[var(--neon-purple)] focus:border-[var(--neon-purple)] focus:outline-none transition-all"
                             />
                             <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--neon-purple)] opacity-50" />
                         </div>
@@ -161,7 +166,7 @@ function ConfigurationPanel({
                             setVisualizerTarget(newArray[Math.floor(Math.random() * newArray.length)]);
                         }
                     }}
-                    className="w-full h-14 rounded-xl border-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10 hover:border-[var(--neon-cyan)]/60 transition-all font-black italic tracking-tighter text-lg group/btn"
+                    className="w-full h-14 rounded-xl dark:border-[var(--neon-cyan)]/20 dark:text-[var(--neon-cyan)] dark:hover:bg-[var(--neon-cyan)]/10 dark:hover:border-[var(--neon-cyan)]/60 border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/15 hover:border-[var(--neon-cyan)] transition-all font-black italic tracking-tighter text-lg group/btn"
                 >
                     <Wand2 className="w-5 h-5 mr-3 group-hover/btn:rotate-12 group-hover/btn:scale-125 transition-transform" />
                     REGENERATE
@@ -171,11 +176,11 @@ function ConfigurationPanel({
             {/* Matrix Decorative bits */}
             <div className="absolute bottom-2 right-2 flex gap-1 opacity-20">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className={`w-1 h-1 rounded-full ${i === 1 ? 'bg-[var(--neon-cyan)]' : 'bg-white'}`} />
+                    <div key={i} className={`w-1 h-1 rounded-full ${i === 1 ? 'bg-[var(--neon-cyan)]' : 'dark:bg-white bg-gray-700'}`} />
                 ))}
             </div>
             {/* Tips/Info */}
-            <div className="bg-[var(--neon-cyan)]/5 border border-[var(--neon-cyan)]/10 rounded-xl p-4 mt-6">
+            <div className="dark:bg-[var(--neon-cyan)]/5 dark:border dark:border-[var(--neon-cyan)]/10 bg-[var(--neon-cyan)]/10 border border-[var(--neon-cyan)]/20 rounded-xl p-4 mt-6">
                 <p className="text-[10px] text-[var(--neon-cyan)] font-mono leading-relaxed opacity-60">
                     // SYSTEM NOTE:<br />
                     Adjust the array size or direct values to see how the algorithm behaves with different datasets. Target values can be set to test edge cases.
@@ -198,6 +203,7 @@ export default function Visualize() {
         algoSlug ? "algorithm" : "options"
     );
     const [showComplexity, setShowComplexity] = useState(true);
+    const [activeTab, setActiveTab] = useState<'visualization' | 'implementation' | 'quiz'>('visualization');
     const [showComparison, setShowComparison] = useState(false);
 
     // Visualizer data state
@@ -395,15 +401,57 @@ export default function Visualize() {
                                     </div>
                                 </div>
 
-                                {/* Main Visualization Area */}
-                                <div className="max-w-6xl mx-auto space-y-12">
-                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                                {/* Tab Navigation */}
+                                <div className="max-w-6xl mx-auto">
+                                    <div className="flex border-b border-gray-200 dark:border-gray-700 mb-8">
+                                        <button
+                                            onClick={() => setActiveTab('visualization')}
+                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${
+                                                activeTab === 'visualization'
+                                                    ? 'border-[var(--neon-cyan)] text-[var(--neon-cyan)]'
+                                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                            }`}
+                                        >
+                                            <Play size={20} className="inline mr-2" />
+                                            VISUALIZATION
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('implementation')}
+                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${
+                                                activeTab === 'implementation'
+                                                    ? 'border-[var(--neon-purple)] text-[var(--neon-purple)]'
+                                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                            }`}
+                                        >
+                                            <Code2 size={20} className="inline mr-2" />
+                                            IMPLEMENTATIONS
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('quiz')}
+                                            className={`px-8 py-4 font-bold border-b-2 transition-all ${
+                                                activeTab === 'quiz'
+                                                    ? 'border-[var(--neon-green)] text-[var(--neon-green)]'
+                                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                            }`}
+                                        >
+                                            <Brain size={20} className="inline mr-2" />
+                                            QUIZ & CHALLENGES
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Tab Content */}
+                                {activeTab === 'visualization' && (
+                                    <>
+                                        {/* Main Visualization Area */}
+                                        <div className="max-w-6xl mx-auto space-y-12">
+                                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                                         {/* Visualizer Column */}
                                         <div className="lg:col-span-8 space-y-6">
                                             <div className="relative group">
                                                 <div className="absolute -inset-1 bg-gradient-to-r from-[var(--neon-cyan)]/20 to-[var(--neon-purple)]/20 rounded-3xl blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
 
-                                                <div className="relative bg-[#0a0a0c]/40 backdrop-blur-3xl border border-white/5 rounded-3xl p-6 md:p-10 shadow-3xl overflow-hidden min-h-[500px] flex items-center justify-center">
+                                                <div className="relative dark:bg-[#0a0a0c]/40 dark:backdrop-blur-3xl dark:border dark:border-white/5 bg-white/40 backdrop-blur-3xl border border-gray-300/40 rounded-3xl p-6 md:p-10 shadow-3xl overflow-hidden min-h-[500px] flex items-center justify-center">
                                                     <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
 
                                                     <div className="w-full">
@@ -434,7 +482,7 @@ export default function Visualize() {
                                                 <Button
                                                     variant="outline"
                                                     onClick={() => setShowComplexity(!showComplexity)}
-                                                    className={`h-12 rounded-xl transition-all ${showComplexity ? 'bg-[var(--neon-green)]/10 border-[var(--neon-green)]/30 text-[var(--neon-green)]' : 'border-white/5 text-white/40 hover:bg-white/5'}`}
+                                                    className={`h-12 rounded-xl transition-all ${showComplexity ? 'dark:bg-[var(--neon-green)]/10 dark:border-[var(--neon-green)]/30 dark:text-[var(--neon-green)] bg-[var(--neon-green)]/20 border-[var(--neon-green)]/40 text-[var(--neon-green)]' : 'dark:border-white/5 dark:text-white/40 dark:hover:bg-white/5 border-gray-400 text-gray-700 hover:bg-gray-300/40'}`}
                                                 >
                                                     <Activity className="w-4 h-4 mr-2" />
                                                     Analysis
@@ -442,7 +490,7 @@ export default function Visualize() {
                                                 <Button
                                                     variant="outline"
                                                     onClick={() => setShowComparison(!showComparison)}
-                                                    className={`h-12 rounded-xl transition-all ${showComparison ? 'bg-[var(--neon-purple)]/10 border-[var(--neon-purple)]/30 text-[var(--neon-purple)]' : 'border-white/5 text-white/40 hover:bg-white/5'}`}
+                                                    className={`h-12 rounded-xl transition-all ${showComparison ? 'dark:bg-[var(--neon-purple)]/10 dark:border-[var(--neon-purple)]/30 dark:text-[var(--neon-purple)] bg-[var(--neon-purple)]/20 border-[var(--neon-purple)]/40 text-[var(--neon-purple)]' : 'dark:border-white/5 dark:text-white/40 dark:hover:bg-white/5 border-gray-400 text-gray-700 hover:bg-gray-300/40'}`}
                                                 >
                                                     <Zap className="w-4 h-4 mr-2" />
                                                     Related
@@ -713,6 +761,36 @@ export default function Visualize() {
                                         </ul>
                                     </Card>
                                 </motion.div>
+                                    </>
+                                )}
+
+                                {/* Implementation Tab */}
+                                {activeTab === 'implementation' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="max-w-6xl mx-auto"
+                                    >
+                                        <ImplementationSelector 
+                                            algorithm={algorithm.slug} 
+                                            className="mb-8"
+                                        />
+                                    </motion.div>
+                                )}
+
+                                {/* Quiz Tab */}
+                                {activeTab === 'quiz' && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="max-w-6xl mx-auto"
+                                    >
+                                        <QuizModule 
+                                            algorithm={algorithm.slug}
+                                            mode="both"
+                                        />
+                                    </motion.div>
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>

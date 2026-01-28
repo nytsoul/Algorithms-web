@@ -36,11 +36,11 @@ export function SortingVisualization({
                         className={`flex-1 rounded-t ${isSorted ? 'bg-[var(--neon-green)]' :
                             isHighlighted ? 'bg-[var(--neon-cyan)]' :
                                 isCompared ? 'bg-[var(--neon-pink)]' :
-                                    'bg-[var(--neon-purple)]/50'
+                                    'dark:bg-[var(--neon-purple)]/50 bg-[var(--neon-purple)]/70'
                             }`}
                         style={{ minWidth: '8px' }}
                     >
-                        <div className="text-xs text-center text-white font-bold mt-1">
+                        <div className="text-xs text-center dark:text-white text-gray-900 font-bold mt-1">
                             {value}
                         </div>
                     </motion.div>
@@ -83,7 +83,7 @@ export function GraphVisualization({
     visitedEdges = []
 }: GraphVisualizationProps) {
     return (
-        <svg className="w-full h-96 bg-background/50 rounded-lg border border-border">
+        <svg className="w-full h-96 dark:bg-background/50 bg-white/40 rounded-lg border dark:border-border border-gray-400/40">
             {/* Edges */}
             {edges.map((edge, index) => {
                 const fromNode = nodes.find(n => n.id === edge.from);

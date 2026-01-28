@@ -29,6 +29,13 @@ export interface AlgorithmDetailedInfo {
   whenToUse?: string[];
   dryRunExample?: string;
   stepByStep?: string[];
+  // New comprehensive fields
+  recurrenceRelation?: string;
+  complexityDerivation?: string;
+  howItWorks: string;
+  visualSteps?: string[];
+  commonPitfalls?: string[];
+  optimizations?: string[];
 }
 
 // SEARCHING ALGORITHMS

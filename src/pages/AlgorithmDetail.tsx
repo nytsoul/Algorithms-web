@@ -15,6 +15,10 @@ import AICodeGenerator from "@/components/AICodeGenerator";
 import { AlgorithmVisualizer, AlgorithmType } from "@/components/visualizations/AlgorithmVisualizer";
 import OnlineCompiler from "@/components/OnlineCompiler";
 import Flashcard, { FlashcardGrid } from "@/components/Flashcard";
+import ImplementationSelector from "@/components/ImplementationSelector";
+import QuizModule from "@/components/QuizModule";
+import AlgorithmEducationalDisplay from "@/components/AlgorithmEducationalDisplay";
+import UniversalVisualizer from "@/components/UniversalVisualizer";
 import { Header } from "@/components/Header";
 import { useState } from "react";
 import { isSupabaseConfigured, isSupabaseAvailable } from "@/lib/supabase";
@@ -247,116 +251,118 @@ export default function AlgorithmDetail() {
               </div>
 
               <TabsContent value="overview" className="space-y-6">
-                <Card className="cyber-card p-8 bg-card/50 backdrop-blur-sm border-border/50">
-                  <h2 className="text-2xl font-bold mb-4 text-[var(--neon-cyan)]">
-                    <BookOpen className="inline-block w-6 h-6 mr-2" />
-                    Intuition
-                  </h2>
-                  <p className="text-foreground leading-relaxed mb-8">{algorithm.intuition}</p>
+                <AlgorithmEducationalDisplay
+                  name={algorithm.name}
+                  slug={algorithm.slug}
+                  category={algorithm.category}
+                  difficulty={algorithm.difficulty}
+                />
+              </TabsContent>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-lg font-bold mb-3 text-[var(--neon-purple)]">Definition</h3>
-                      <p className="text-muted-foreground bg-background/30 p-4 rounded-lg border border-border/30">
-                        {algorithm.definition || algorithm.description}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold mb-3 text-[var(--neon-green)]">Key Concepts</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {algorithm.tags?.map(tag => (
-                          <Badge key={tag} variant="secondary" className="bg-secondary/20">{tag}</Badge>
-                        ))}
+              <TabsContent value="visualization" className="space-y-6">
+                <Card className="p-6 md:p-8 bg-card/30 backdrop-blur-xl border-border/30">
+                  <UniversalVisualizer
+                    algorithmName={algorithm.name}
+                    algorithmSlug={algorithm.slug}
+                    category={algorithm.category}
+                    timeComplexity={algorithm.timeComplexity}
+                    spaceComplexity={algorithm.spaceComplexity}
+                    customData={{ array: visualizerArray, target: visualizerTarget }}
+                    hideHeader={false}
+                  />
+                  
+                  {/* Custom Data Input Section */}
+                  <div className="mt-8 pt-6 border-t border-border/30">
+                    <h3 className="text-lg font-semibold mb-4 text-foreground">Customize Input Data</h3>
+                    <div className="flex flex-wrap items-end gap-4">
+                      <div className="flex-1 min-w-[280px]">
+                        <label className="text-muted-foreground text-xs font-medium uppercase tracking-wide mb-2 block">
+                          Input Array
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {visualizerArray.map((val, idx) => (
+                            <input
+                              key={idx}
+                              type="number"
+                              value={val}
+                              onChange={(e) => {
+                                const newArray = [...visualizerArray];
+                                newArray[idx] = parseInt(e.target.value) || 0;
+                                setVisualizerArray(newArray);
+                              }}
+                              className="w-14 bg-background/50 border border-border rounded-lg px-2 py-2 text-foreground text-center font-mono text-sm focus:border-primary focus:ring-1 focus:ring-primary/50 focus:outline-none transition-all"
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {(algorithm.category === 'Searching' || algorithm.slug.includes('search')) && (
+                        <div className="w-32">
+                          <label className="text-muted-foreground text-xs font-medium uppercase tracking-wide mb-2 block">
+                            Target Value
+                          </label>
+                          <input
+                            type="number"
+                            value={visualizerTarget}
+                            onChange={(e) => setVisualizerTarget(parseInt(e.target.value) || 0)}
+                            className="w-full bg-background/50 border border-border rounded-lg px-3 py-2 text-foreground font-mono focus:border-primary focus:ring-1 focus:ring-primary/50 focus:outline-none transition-all"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            const newArray = Array.from({ length: 10 }, () => Math.floor(Math.random() * 90) + 10);
+                            setVisualizerArray(newArray);
+                            if (algorithm.category === 'Searching' || algorithm.slug.includes('search')) {
+                              setVisualizerTarget(newArray[Math.floor(Math.random() * newArray.length)]);
+                            }
+                          }}
+                          className="border-primary/30 text-primary hover:bg-primary/10"
+                        >
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Randomize
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setVisualizerArray([...visualizerArray].sort((a, b) => a - b));
+                          }}
+                          className="border-green-500/30 text-green-500 hover:bg-green-500/10"
+                        >
+                          Sort Array
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setVisualizerArray([...visualizerArray].reverse());
+                          }}
+                          className="border-purple-500/30 text-purple-500 hover:bg-purple-500/10"
+                        >
+                          Reverse
+                        </Button>
                       </div>
                     </div>
                   </div>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="visualization" className="space-y-6">
-                <div className="flex flex-col gap-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold flex items-center gap-2">
-                      <Activity className="w-6 h-6 text-[var(--neon-cyan)]" />
-                      Interactive Visualization
-                    </h2>
-                  </div>
-
-                  <div className="bg-black/20 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-2xl">
-                    <AlgorithmVisualizer
-                      type={algorithm.slug as AlgorithmType}
-                      array={visualizerArray}
-                      target={visualizerTarget}
-                      hideHeader={true}
-                    />
-
-                    {/* Data Controls */}
-                    {(algorithm.category === 'Searching' || algorithm.category === 'Sorting') && (
-                      <div className="mt-8 pt-6 border-t border-white/5 flex flex-wrap items-end gap-6">
-                        <div className="flex-1 min-w-[300px]">
-                          <label className="text-[var(--neon-cyan)] text-xs font-bold uppercase tracking-widest mb-3 block">
-                            Input Array
-                          </label>
-                          <div className="flex flex-wrap gap-2">
-                            {visualizerArray.map((val, idx) => (
-                              <input
-                                key={idx}
-                                type="number"
-                                value={val}
-                                onChange={(e) => {
-                                  const newArray = [...visualizerArray];
-                                  newArray[idx] = parseInt(e.target.value) || 0;
-                                  setVisualizerArray(newArray);
-                                }}
-                                className="w-14 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-center font-mono text-sm focus:border-[var(--neon-cyan)] focus:outline-none transition-colors"
-                              />
-                            ))}
-                          </div>
-                        </div>
-
-                        {algorithm.category === 'Searching' && (
-                          <div className="w-32">
-                            <label className="text-[var(--neon-purple)] text-xs font-bold uppercase tracking-widest mb-3 block">
-                              Target
-                            </label>
-                            <input
-                              type="number"
-                              value={visualizerTarget}
-                              onChange={(e) => setVisualizerTarget(parseInt(e.target.value) || 0)}
-                              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-1.5 text-white font-mono focus:border-[var(--neon-purple)] focus:outline-none transition-colors"
-                            />
-                          </div>
-                        )}
-
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            const newArray = Array.from({ length: 10 }, () => Math.floor(Math.random() * 90) + 10);
-                            setVisualizerArray(newArray);
-                            if (algorithm.category === 'Searching') {
-                              setVisualizerTarget(newArray[Math.floor(Math.random() * newArray.length)]);
-                            }
-                          }}
-                          className="border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/10"
-                        >
-                          <TrendingUp className="w-4 h-4 mr-2" />
-                          Randomize
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </TabsContent>
-
               <TabsContent value="code" className="space-y-6">
                 <Tabs defaultValue="implementation">
                   <TabsList className="mb-4 bg-background/30">
-                    <TabsTrigger value="implementation">Implementation</TabsTrigger>
+                    <TabsTrigger value="implementation">Multi-Language</TabsTrigger>
+                    <TabsTrigger value="javascript">JavaScript</TabsTrigger>
                     <TabsTrigger value="compiler">Online Compiler</TabsTrigger>
                     <TabsTrigger value="ai">AI Generator</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="implementation">
+                    <ImplementationSelector algorithm={algorithm.slug} />
+                  </TabsContent>
+
+                  <TabsContent value="javascript">
                     <Card className="cyber-card p-6 bg-card/50 backdrop-blur-sm border-border/50">
                       <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-bold text-[var(--neon-cyan)]">
@@ -444,11 +450,7 @@ export default function AlgorithmDetail() {
               </TabsContent>
 
               <TabsContent value="quiz" className="space-y-6">
-                <div className="text-center py-20">
-                  <Sparkles className="w-12 h-12 text-[var(--neon-pink)] mx-auto mb-4" />
-                  <h2 className="text-2xl font-bold mb-2">Quiz Module Coming Soon</h2>
-                  <p className="text-muted-foreground">Test your knowledge of {algorithm.name} with interactive challenges.</p>
-                </div>
+                <QuizModule algorithm={algorithm.slug} mode="both" />
               </TabsContent>
 
             </Tabs>
